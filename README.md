@@ -28,3 +28,18 @@
    ```bash
    podman secret list
    ```
+
+## Contributing
+
+1. Link the pre-commit hook so that it will execute before commits.
+    ```bash
+    mkdir .git/hooks
+    ln -s -r .github/pre-commit.sh .git/hooks/pre-commit
+    ```
+
+<!-- markdownlint-configure-file {
+  MD013: {
+    code_blocks: false
+  }
+}
+-->
