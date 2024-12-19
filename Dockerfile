@@ -20,16 +20,18 @@ RUN wget --quiet https://github.com/bitwarden/directory-connector/releases/downl
     && unzip $WORKING_DIR/bwdc-linux-$BWDC_VERSION.zip -d /usr/local/bin \
     && rm $WORKING_DIR/bwdc-linux-$BWDC_VERSION.zip
 
-RUN --mount=type=secret,id=bw_clientid cp /run/secrets/bw_clientid $WORKING_DIR/.secret && chown $BWUSER:$BWUSER $WORKING_DIR/.secret
+RUN --mount=type=secret,id=bw_clientid echo "export BW_CLIENTID=$( cat /run/secrets/bw_clientid )" >> $WORKING_DIR/.profile && tail $WORKING_DIR/.profile
+RUN --mount=type=secret,id=bw_clientsecret echo "export BW_CLIENTSECRET=$( cat /run/secrets/bw_clientsecret )" >> $WORKING_DIR/.profile && tail $WORKING_DIR/.profile
 USER $BWUSER
 ENV BITWARDENCLI_CONNECTOR_PLAINTEXT_SECRETS=true
-RUN bwdc --version && \
+RUN /bin/bash -l -c "set | grep BW && \
+    bwdc --version && \
     bwdc login && \
-    bwdc logout
+    bwdc logout"
 
 # TODO Rearrange up when finalized
 COPY --chown=$BWUID:$BWUID --chmod=700 entrypoint.sh $WORKING_DIR/
 
 # Do the thing
-ENV BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE
+ENV BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE=changeme
 ENTRYPOINT ["/bin/bash", "entrypoint.sh", "$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE"]
