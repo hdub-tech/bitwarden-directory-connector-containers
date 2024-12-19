@@ -4,6 +4,7 @@ FROM debian:12-slim
 # hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get -y install --no-install-recommends wget ca-certificates unzip libsecret-1-0 jq \
+       vim \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -20,14 +21,16 @@ RUN wget --quiet https://github.com/bitwarden/directory-connector/releases/downl
     && unzip $WORKING_DIR/bwdc-linux-$BWDC_VERSION.zip -d /usr/local/bin \
     && rm $WORKING_DIR/bwdc-linux-$BWDC_VERSION.zip
 
-RUN --mount=type=secret,id=bw_clientid echo "export BW_CLIENTID=$( cat /run/secrets/bw_clientid )" >> $WORKING_DIR/.profile && tail $WORKING_DIR/.profile
-RUN --mount=type=secret,id=bw_clientsecret echo "export BW_CLIENTSECRET=$( cat /run/secrets/bw_clientsecret )" >> $WORKING_DIR/.profile && tail $WORKING_DIR/.profile
 USER $BWUSER
 ENV BITWARDENCLI_CONNECTOR_PLAINTEXT_SECRETS=true
-RUN /bin/bash -l -c "set | grep BW && \
-    bwdc --version && \
-    bwdc login && \
-    bwdc logout"
+RUN --mount=type=secret,id=bw_clientid,uid=$BWUID --mount=type=secret,id=bw_clientsecret,uid=$BWUID \
+    BW_CLIENTID="$( cat /run/secrets/bw_clientid )" \
+    && export BW_CLIENTID \
+    && BW_CLIENTSECRET="$( cat /run/secrets/bw_clientsecret )" \
+    && export BW_CLIENTSECRET \
+    && bwdc --version \
+    && bwdc login \
+    && bwdc logout
 
 # TODO Rearrange up when finalized
 COPY --chown=$BWUID:$BWUID --chmod=700 entrypoint.sh $WORKING_DIR/

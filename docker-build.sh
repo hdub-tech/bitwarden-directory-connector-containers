@@ -2,12 +2,15 @@
 
 set -e
 
+SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+SECRETS_DIR="${SCRIPT_DIR}/.secrets"
+
 BWDC_VERSION=2024.10.0
 BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE="gsuite"
 
 declare -a BUILD_SECRETS
-BUILD_SECRETS+=("--secret=id=bw_clientid,src=areyoukiddingme/.bw_clientid")
-BUILD_SECRETS+=("--secret=id=bw_clientsecret,src=areyoukiddingme/.bw_clientsecret")
+BUILD_SECRETS+=("--secret=id=bw_clientid,src=${SECRETS_DIR}/bw_clientid")
+BUILD_SECRETS+=("--secret=id=bw_clientsecret,src=${SECRETS_DIR}/bw_clientsecret")
 declare -a SECRETS
 SECRETS+=("--secret=bw_orguuid,type=env,target=BW_ORGUUID")
 SECRETS+=("--secret=bw_clientid,type=env,target=BW_CLIENTID")
