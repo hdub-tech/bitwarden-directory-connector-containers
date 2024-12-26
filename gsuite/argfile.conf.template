@@ -1,0 +1,14 @@
+# Uncomment and update values below.
+# Google Admin > Account > Domains > Manage domains: The domain you plan to sync
+#GOOGLE_DOMAIN=example.com
+
+# Google Admin > Account > Admin roles: The email of someone in one of the following roles:
+# Super Admin, User Management Admin, a custom role with full User access
+#GOOGLE_ADMIN_USER_EMAIL=your_admin_user_not_service_user@example.com
+
+# Google Cloud Console > [YourBitwardenProject] > APIs & Services > Credentials > Service Accounts
+#GOOGLE_SERVICE_USER_EMAIL=your_gcloud_serviceuser@your_gcloud_bitwardens_app.iam.gserviceaccount.com
+
+# Google Admin > Account > Account settings > Customer ID
+# Highly recommend testing without setting this as it appears unused
+#GOOGLE_CUSTOMER=

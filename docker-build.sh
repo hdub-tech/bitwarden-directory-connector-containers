@@ -17,7 +17,15 @@ SECRETS+=("--secret=bw_clientid,type=env,target=BW_CLIENTID")
 SECRETS+=("--secret=bw_clientsecret,type=env,target=BW_CLIENTSECRET")
 SECRETS+=("--secret=bw_key,type=env,target=BW_KEY")
 
-podman build --env BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE="$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE" "${BUILD_SECRETS[@]}" -t hdub-tech-bwdc-"$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE":"$BWDC_VERSION" -f Dockerfile
+# Build base
+podman build --build-arg BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE="$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE" "${BUILD_SECRETS[@]}" -t hdub-tech-bwdc-base:"$BWDC_VERSION" -f Dockerfile
+
+# Build gsuite container
+cd gsuite
+podman build --build-arg-file=argfile.conf \
+  --secret=id=bw_orguuid,src="${SECRETS_DIR}"/bw_orguuid \
+  --secret=id=bw_key,src="${SECRETS_DIR}"/bw_key \
+  -t hdub-tech-bwdc-gsuite:"$BWDC_VERSION" -f Dockerfile
 
 cat <<EOM
   To run non-interactively:

@@ -1,8 +1,0 @@
-ARG BWDC_VERSION=2024.10.0
-FROM hdub-tech-bwdc:$BWDC_VERSION
-
-# Arguments and Environment variables
-ENV BITWARDENCLI_CONNECTOR_PLAINTEXT_SECRETS=true
-ENV BW_SERVER="bitwarden.com"
-ENV BW_KEYTYPE="gsuite"
-ENV BW_DIRECTORY=2
