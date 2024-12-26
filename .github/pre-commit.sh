@@ -9,7 +9,7 @@
 
 echo "==> Executing pre-commit hook..."
 PROJECT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )/../../" && pwd )
-FILES_CHANGED=$( git diff-index --cached --name-only HEAD )
+FILES_CHANGED=$( git diff-index --cached --diff-filter=d --name-only HEAD )
 PODMAN_OR_DOCKER=$( which podman || which docker || (echo "Please install podman or docker!" && exit 1) )
 declare -a FAILED_TESTS
 
