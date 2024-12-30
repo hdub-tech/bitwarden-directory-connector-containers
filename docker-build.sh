@@ -11,18 +11,20 @@ BWDC_VERSION=2024.10.0
 BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE=
 SECRETS_MANAGER=
 NO_CACHE=
+OPTIONAL_REBUILD_BWDC_LOGIN_STAGE=
 
 USAGE_HELP=0
 USAGE_ERROR=255
 usage() {
   cat <<EOM
   USAGE:
-    ${SCRIPT_NAME} -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE -s SECRETS_MANAGER [-n]
+    ${SCRIPT_NAME} -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE -s SECRETS_MANAGER [-n] [-r]
 
    - BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE is one of: ${SUPPORTED_BWDC_SYNCS[*]}
    - SECRETS_MANAGER is one of: ${SUPPORTED_SECRETS_MANAGERS[*]}
      Note: "preset" indicates that the secrets are already exported to the environment.
    - Use "-n" to build all Docker images without cache (--no-cache)
+   - Use "-r" to rebuild the final run stage of the type specific container (allows you to test login)
 
 EOM
 
@@ -96,7 +98,9 @@ buildGsuite() {
   exportSecrets bw_orguuid bw_key
 
   cd "${SCRIPT_DIR}"/"${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}"
+  # shellcheck disable=SC2086
   podman build ${NO_CACHE} \
+    ${OPTIONAL_REBUILD_BWDC_LOGIN_STAGE} \
     --build-arg-file=argfile.conf \
     --secret=id=bw_orguuid,env=BW_ORGUUID \
     --secret=id=bw_key,env=BW_KEY \
@@ -131,7 +135,7 @@ arrayContains() {
   [[ " ${array[*]} " =~ [[:space:]]${search_item}[[:space:]] ]]
 }
 
-while getopts "ht:s:n" opt; do
+while getopts "ht:s:nr" opt; do
   case "${opt}" in
     "h" )
       # h = help
@@ -155,6 +159,10 @@ while getopts "ht:s:n" opt; do
     "n" )
       # n = no-cache
       NO_CACHE="--no-cache" ;;
+    "r" )
+      # r = rebuild run stage
+      OPTIONAL_REBUILD_BWDC_LOGIN_STAGE="--build-arg OPTIONAL_REBUILD_BWDC_LOGIN_STAGE=\"$( date +%s )\""
+      ;;
     * ) usage "${USAGE_ERROR}" ;;
   esac
 done

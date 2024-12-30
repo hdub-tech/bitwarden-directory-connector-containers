@@ -12,6 +12,7 @@ ARG GOOGLE_ADMIN_USER_EMAIL
 ARG GOOGLE_CUSTOMER=""
 ARG GOOGLE_SERVICE_USER_EMAIL
 
+ARG OPTIONAL_REBUILD_BWDC_LOGIN_STAGE
 # Update the bwdc data-file
 RUN --mount=type=secret,id=bw_orguuid,uid=$BWUID \
     --mount=type=secret,id=bw_key,uid=$BWUID \
