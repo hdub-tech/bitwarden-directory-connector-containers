@@ -22,19 +22,6 @@ RUN wget --quiet https://github.com/bitwarden/directory-connector/releases/downl
     && rm $WORKING_DIR/bwdc-linux-$BWDC_VERSION.zip
 
 USER $BWUSER
-COPY --chown=$BWUID:$BWUID --chmod=700 entrypoint.sh $WORKING_DIR/
-
 ENV BITWARDENCLI_CONNECTOR_PLAINTEXT_SECRETS=true
-# Run login to initialize the data.json file
-RUN --mount=type=secret,id=bw_clientid,uid=$BWUID \
-    --mount=type=secret,id=bw_clientsecret,uid=$BWUID \
-    BW_CLIENTID="$( cat /run/secrets/bw_clientid )" \
-    && export BW_CLIENTID \
-    && BW_CLIENTSECRET="$( cat /run/secrets/bw_clientsecret )" \
-    && export BW_CLIENTSECRET \
-    && bwdc --version \
-    && bwdc login \
-    && bwdc logout
-
-# Do the thing
+COPY --chown=$BWUID:$BWUID --chmod=700 entrypoint.sh $WORKING_DIR/
 ENTRYPOINT ["/bin/bash", "entrypoint.sh"]

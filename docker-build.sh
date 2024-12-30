@@ -48,11 +48,9 @@ exportPodmanSecrets() {
       declare -a FILE_AND_ID
       # Select the file with the specified secret as well as its Hex ID
       mapfile -t FILE_AND_ID < <( podman secret inspect "${psecret}" | jq -r '.[0].Spec.Driver.Options.path, .[0].ID' )
-      # Extract the encoded secret from its file using its Hex ID
-      ENCODED=$( jq -r --arg secretid "${FILE_AND_ID[1]}" '.[$secretid]' "${FILE_AND_ID[0]}"/secretsdata.json )
+      # Extract the encoded secret from file using its Hex ID and b64 decode
+      SECRET_VALUE=$( jq -r --arg secretid "${FILE_AND_ID[1]}" '.[$secretid] | @base64d' "${FILE_AND_ID[0]}"/secretsdata.json )
       SECRET_KEY="$( uppercase "${psecret}" )"
-      # Yeah it really is that terrible
-      SECRET_VALUE="$( echo "${ENCODED}" | base64 -d )"
       export "${SECRET_KEY}"="${SECRET_VALUE}"
     else
       echo "${psecret} doesn't exist in podman local storage"
@@ -88,11 +86,7 @@ exportSecrets() {
 
 # Build common base image
 buildBase() {
-  exportSecrets bw_clientid bw_clientsecret
-
   podman build ${NO_CACHE} \
-    --secret=id=bw_clientid,env=BW_CLIENTID \
-    --secret=id=bw_clientsecret,env=BW_CLIENTSECRET \
     -t hdub-tech-bwdc-base:"${BWDC_VERSION}" -f Dockerfile
 }
 
