@@ -95,15 +95,15 @@ buildBase() {
 # Build gsuite sync image
 buildGsuite() {
   buildBase
-  exportSecrets bw_orguuid bw_key
+  exportSecrets bw_clientid bw_clientsecret
 
   cd "${SCRIPT_DIR}"/"${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}"
   # shellcheck disable=SC2086
   podman build ${NO_CACHE} \
     ${OPTIONAL_REBUILD_BWDC_LOGIN_STAGE} \
     --build-arg-file=argfile.conf \
-    --secret=id=bw_orguuid,env=BW_ORGUUID \
-    --secret=id=bw_key,env=BW_KEY \
+    --secret=id=bw_clientid,env=BW_CLIENTID \
+    --secret=id=bw_clientsecret,env=BW_CLIENTSECRET \
     -t hdub-tech-bwdc-"${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}":"${BWDC_VERSION}" -f Dockerfile
 }
 
@@ -112,6 +112,7 @@ usageRun() {
   declare -a SECRETS
   SECRETS+=("--secret=bw_clientid,type=env,target=BW_CLIENTID")
   SECRETS+=("--secret=bw_clientsecret,type=env,target=BW_CLIENTSECRET")
+  SECRETS+=("--secret=bw_key,type=env,target=BW_KEY")
 
   cat <<EOM
     To run non-interactively:
