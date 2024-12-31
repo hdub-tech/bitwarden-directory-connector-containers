@@ -5,6 +5,7 @@ SCRIPT_NAME="$( basename "${0}" )"
 SUPPORTED_BWDC_SYNCS=( gsuite )
 BW_DATAFILE=
 BW_ORGUUID=
+ERROR_FILE=/tmp/entrypoint.log
 
 usage() {
   cat <<EOM
@@ -38,14 +39,14 @@ isLoggedOut() {
 # login if not already
 login() {
   if isLoggedOut; then
-    bwdc login
+    bwdc login || exit 7
   fi
 }
 
 # logout if not already
 logout() {
   if ! isLoggedOut; then
-    bwdc logout
+    bwdc logout || exit 8
   fi
 }
 
@@ -97,6 +98,33 @@ config() {
 
   cp "${BW_DATAFILE}" "${BW_DATAFILE}.old"
   echo "${BW_DATAFILE_CONTENTS}" > "${BW_DATAFILE}"
+
+  # Running bwdc data-file will detect malformed JSON, and acts as a success
+  # metric. However, it will repair the file and simply return success, hence
+  # the redirect stderr to file and make sure file size is zero hack
+  echo -n "Data file updated: "
+  bwdc data-file 2>"${ERROR_FILE}"
+  if [ -s "${ERROR_FILE}" ]; then
+    echo "Failure validating configuration file:"
+    cat "${ERROR_FILE}"
+    exit 6
+  else
+    echo "Configuration completed successfully"
+  fi
+}
+
+test() {
+  config
+  login
+  bwdc test || test_failed=true
+  # Always logout
+  logout
+
+  if [ -n "${test_failed}" ]; then
+    exit 9
+  else
+    echo "Test completed successfully"
+  fi
 }
 
 if [ "$#" -ne "1" ]; then
@@ -106,7 +134,7 @@ else
     "config" )
       config ;;
     "test" )
-      echo TODO test ;;
+      test ;;
     "sync" )
       echo TODO sync ;;
     "*" )
