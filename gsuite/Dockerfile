@@ -25,9 +25,9 @@ ARG GOOGLE_SYNC_LARGE_IMPORT=false
 COPY --chown=$BWUID:$BWUID --chmod=700 sync.json $WORKING_DIR/
 
 ARG OPTIONAL_REBUILD_BWDC_LOGIN_STAGE
-# Run login to initialize the data.json file. bwdc config only works after
-# login, and only can set a few options. Logout necessary due to bwdc having a
-# heart attack if you modify json file while logged in.
+# Run login to initialize the data.json file. bwdc config only works when
+# logged in, and only can set a few options. Logout necessary due to bwdc having
+# a heart attack if you modify json file while logged in.
 RUN --mount=type=secret,id=bw_clientid,uid=$BWUID \
     --mount=type=secret,id=bw_clientsecret,uid=$BWUID \
     BW_CLIENTID="$( cat /run/secrets/bw_clientid )" \
@@ -54,18 +54,19 @@ RUN --mount=type=secret,id=bw_clientid,uid=$BWUID \
       --arg googleSyncOverwriteExisting "$GOOGLE_SYNC_OVERWRITE_EXISTING" \
       --arg googleSyncLargeImport "$GOOGLE_SYNC_LARGE_IMPORT" \
       --slurpfile googleSync "$WORKING_DIR"/sync.json \
-       '.[$orgid].directoryConfigurations.gsuite.domain = $googleDomain \
+       'def tobool(f): if f == "true" then true elif f == "false" then false else f end; \
+       .[$orgid].directoryConfigurations.gsuite.domain = $googleDomain \
        | .[$orgid].directoryConfigurations.gsuite.adminUser = $googleAdminUserEmail \
        | .[$orgid].directoryConfigurations.gsuite.clientEmail = $googleServiceUserEmail \
        | .[$orgid].directoryConfigurations.gsuite.customer = $googleCustomer \
        | .[$orgid].directorySettings.sync = $googleSync[0] \
-       | .[$orgid].directorySettings.sync.users = $googleSyncUsers \
+       | .[$orgid].directorySettings.sync.users = tobool($googleSyncUsers) \
        | .[$orgid].directorySettings.sync.userFilter = $googleSyncUserFilter \
-       | .[$orgid].directorySettings.sync.groups = $googleSyncGroups \
+       | .[$orgid].directorySettings.sync.groups = tobool($googleSyncGroups) \
        | .[$orgid].directorySettings.sync.groupFilter = $googleSyncGroupFilter \
-       | .[$orgid].directorySettings.sync.removeDisabled = $googleSyncRemoveDisabled \
-       | .[$orgid].directorySettings.sync.overwriteExisting = $googleSyncOverwriteExisting \
-       | .[$orgid].directorySettings.sync.largeImport = $googleSyncLargeImport' \
+       | .[$orgid].directorySettings.sync.removeDisabled = tobool($googleSyncRemoveDisabled) \
+       | .[$orgid].directorySettings.sync.overwriteExisting = tobool($googleSyncOverwriteExisting) \
+       | .[$orgid].directorySettings.sync.largeImport = tobool($googleSyncLargeImport)' \
        "$BW_DATAFILE" > "$BW_DATAFILE".new \
     && cp "$BW_DATAFILE" "$BW_DATAFILE".old \
     && cp "$BW_DATAFILE".new "$BW_DATAFILE"
