@@ -17,3 +17,9 @@
 # Examples: https://bitwarden.com/help/workspace-directory/#specify-sync-filters
 #GOOGLE_SYNC_USERS=true
 #GOOGLE_SYNC_USER_FILTER=|orgUnitPath='/My OU'
+
+# To sync groups, uncomment the next two settings and update the filter
+# NOTE: This will not add the users in the groups, unless those users were
+# synched with a User Filter! This will just create groups in bitwarden
+#GOOGLE_SYNC_GROUPS=true
+#GOOGLE_SYNC_GROUP_FILTER=|email=admin@example.com

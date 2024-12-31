@@ -8,13 +8,15 @@ USER $BWUSER
 
 ENV BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE=gsuite
 
-# Configurable arguments
+# Configurable arguments (Use $REPO/$TYPE/argfile.conf for overrides)
 ARG GOOGLE_DOMAIN
 ARG GOOGLE_ADMIN_USER_EMAIL
 ARG GOOGLE_CUSTOMER=""
 ARG GOOGLE_SERVICE_USER_EMAIL
 ARG GOOGLE_SYNC_USERS=false
 ARG GOOGLE_SYNC_USER_FILTER=""
+ARG GOOGLE_SYNC_GROUPS=false
+ARG GOOGLE_SYNC_GROUP_FILTER=""
 
 # Copy in the sync block
 COPY --chown=$BWUID:$BWUID --chmod=700 sync.json $WORKING_DIR/
@@ -43,6 +45,8 @@ RUN --mount=type=secret,id=bw_clientid,uid=$BWUID \
       --arg googleServiceUserEmail "$GOOGLE_SERVICE_USER_EMAIL" \
       --arg googleSyncUsers "$GOOGLE_SYNC_USERS" \
       --arg googleSyncUserFilter "$GOOGLE_SYNC_USER_FILTER" \
+      --arg googleSyncGroups "$GOOGLE_SYNC_GROUPS" \
+      --arg googleSyncGroupFilter "$GOOGLE_SYNC_GROUP_FILTER" \
       --slurpfile googleSync "$WORKING_DIR"/sync.json \
        '.[$orgid].directoryConfigurations.gsuite.domain = $googleDomain \
        | .[$orgid].directoryConfigurations.gsuite.adminUser = $googleAdminUserEmail \
@@ -50,7 +54,9 @@ RUN --mount=type=secret,id=bw_clientid,uid=$BWUID \
        | .[$orgid].directoryConfigurations.gsuite.customer = $googleCustomer \
        | .[$orgid].directorySettings.sync = $googleSync[0] \
        | .[$orgid].directorySettings.sync.users = $googleSyncUsers \
-       | .[$orgid].directorySettings.sync.userFilter = $googleSyncUserFilter' \
+       | .[$orgid].directorySettings.sync.userFilter = $googleSyncUserFilter \
+       | .[$orgid].directorySettings.sync.groups = $googleSyncGroups \
+       | .[$orgid].directorySettings.sync.groupFilter = $googleSyncGroupFilter' \
        "$BW_DATAFILE" > "$BW_DATAFILE".new \
     && cp "$BW_DATAFILE" "$BW_DATAFILE".old \
     && cp "$BW_DATAFILE".new "$BW_DATAFILE"
