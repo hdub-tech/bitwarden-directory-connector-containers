@@ -17,6 +17,9 @@ ARG GOOGLE_SYNC_USERS=false
 ARG GOOGLE_SYNC_USER_FILTER=""
 ARG GOOGLE_SYNC_GROUPS=false
 ARG GOOGLE_SYNC_GROUP_FILTER=""
+ARG GOOGLE_SYNC_REMOVE_DISABLED=false
+ARG GOOGLE_SYNC_OVERWRITE_EXISTING=false
+ARG GOOGLE_SYNC_LARGE_IMPORT=false
 
 # Copy in the sync block
 COPY --chown=$BWUID:$BWUID --chmod=700 sync.json $WORKING_DIR/
@@ -47,6 +50,9 @@ RUN --mount=type=secret,id=bw_clientid,uid=$BWUID \
       --arg googleSyncUserFilter "$GOOGLE_SYNC_USER_FILTER" \
       --arg googleSyncGroups "$GOOGLE_SYNC_GROUPS" \
       --arg googleSyncGroupFilter "$GOOGLE_SYNC_GROUP_FILTER" \
+      --arg googleSyncRemoveDisabled "$GOOGLE_SYNC_REMOVE_DISABLED" \
+      --arg googleSyncOverwriteExisting "$GOOGLE_SYNC_OVERWRITE_EXISTING" \
+      --arg googleSyncLargeImport "$GOOGLE_SYNC_LARGE_IMPORT" \
       --slurpfile googleSync "$WORKING_DIR"/sync.json \
        '.[$orgid].directoryConfigurations.gsuite.domain = $googleDomain \
        | .[$orgid].directoryConfigurations.gsuite.adminUser = $googleAdminUserEmail \
@@ -56,7 +62,10 @@ RUN --mount=type=secret,id=bw_clientid,uid=$BWUID \
        | .[$orgid].directorySettings.sync.users = $googleSyncUsers \
        | .[$orgid].directorySettings.sync.userFilter = $googleSyncUserFilter \
        | .[$orgid].directorySettings.sync.groups = $googleSyncGroups \
-       | .[$orgid].directorySettings.sync.groupFilter = $googleSyncGroupFilter' \
+       | .[$orgid].directorySettings.sync.groupFilter = $googleSyncGroupFilter \
+       | .[$orgid].directorySettings.sync.removeDisabled = $googleSyncRemoveDisabled \
+       | .[$orgid].directorySettings.sync.overwriteExisting = $googleSyncOverwriteExisting \
+       | .[$orgid].directorySettings.sync.largeImport = $googleSyncLargeImport' \
        "$BW_DATAFILE" > "$BW_DATAFILE".new \
     && cp "$BW_DATAFILE" "$BW_DATAFILE".old \
     && cp "$BW_DATAFILE".new "$BW_DATAFILE"

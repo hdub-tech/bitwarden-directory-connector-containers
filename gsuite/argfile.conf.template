@@ -23,3 +23,8 @@
 # synched with a User Filter! This will just create groups in bitwarden
 #GOOGLE_SYNC_GROUPS=true
 #GOOGLE_SYNC_GROUP_FILTER=|email=admin@example.com
+
+# Sync management settings. Defaults in Dockerfile, the following are overrides
+#GOOGLE_SYNC_REMOVE_DISABLED=true
+#GOOGLE_SYNC_OVERWRITE_EXISTING=true
+#GOOGLE_SYNC_LARGE_IMPORT=true
