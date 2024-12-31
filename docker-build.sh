@@ -1,11 +1,11 @@
 #!/bin/bash
 
-set -e
+# TODO convert to compose file?
 
 SCRIPT_DIR="$( cd "$( dirname "${0}" )" && pwd )"
 SCRIPT_NAME="$( basename "${0}" )"
 SUPPORTED_BWDC_SYNCS=( gsuite )
-SUPPORTED_SECRETS_MANAGERS=( podman preset )
+SUPPORTED_SECRETS_MANAGERS=( podman env )
 
 BWDC_VERSION=2024.10.0
 BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE=
@@ -22,7 +22,7 @@ usage() {
 
    - BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE is one of: ${SUPPORTED_BWDC_SYNCS[*]}
    - SECRETS_MANAGER is one of: ${SUPPORTED_SECRETS_MANAGERS[*]}
-     Note: "preset" indicates that the secrets are already exported to the environment.
+     Note: "env" indicates that the secrets are already exported to the environment.
    - Use "-n" to build all Docker images without cache (--no-cache)
    - Use "-r" to rebuild the final run stage of the type specific container (allows you to test login)
 
@@ -61,11 +61,11 @@ exportPodmanSecrets() {
   done
 }
 
-# Preset secrets SHOULD already be exported in this env and this confirms it
-confirmPresetSecrets() {
-  for preset in "$@"; do
-    if [ -z "${!preset}" ]; then  # The ! allows Indirect Ref to env var
-      echo "Please export ${preset} if using SECRETS_MANAGER=preset"
+# env secrets SHOULD already be exported in this env and this confirms it
+confirmEnvSecrets() {
+  for env in "$@"; do
+    if [ -z "${!env}" ]; then  # The ! allows Indirect Ref to env var
+      echo "Please export ${env} if using SECRETS_MANAGER=env"
       exit 6
     fi
   done
@@ -80,9 +80,9 @@ exportSecrets() {
 
   case "${SECRETS_MANAGER}" in
     "podman" ) exportPodmanSecrets "$@" ;;
-    "preset" )
+    "env" )
       # shellcheck disable=SC2048,SC2086
-      confirmPresetSecrets ${*@U} ;;
+      confirmEnvSecrets ${*@U} ;;
   esac
 }
 
@@ -97,7 +97,9 @@ buildGsuite() {
   buildBase
   exportSecrets bw_clientid bw_clientsecret
 
-  cd "${SCRIPT_DIR}"/"${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}"
+  cd "${SCRIPT_DIR}"/"${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" \
+    || (echo "Missing ${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE} subdir in ${SCRIPT_DIR}" \
+       && exit 1)
   # shellcheck disable=SC2086
   podman build ${NO_CACHE} \
     ${OPTIONAL_REBUILD_BWDC_LOGIN_STAGE} \
@@ -108,6 +110,7 @@ buildGsuite() {
 }
 
 # Convenient blurb to let you know how to run the container
+# TODO: This doesn't cover running with secrets as ENV vars (env)
 usageRun() {
   declare -a SECRETS
   SECRETS+=("--secret=bw_clientid,type=env,target=BW_CLIENTID")
