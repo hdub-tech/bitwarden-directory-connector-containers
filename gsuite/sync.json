@@ -1,0 +1,10 @@
+{
+	"users": false,
+	"groups": false,
+	"interval": 5,
+	"removeDisabled": false,
+	"overwriteExisting": false,
+	"largeImport": false,
+	"groupFilter": "",
+	"userFilter": ""
+}

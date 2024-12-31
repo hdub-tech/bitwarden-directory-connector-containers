@@ -12,3 +12,8 @@
 # Google Admin > Account > Account settings > Customer ID
 # Highly recommend testing without setting this as it appears unused
 #GOOGLE_CUSTOMER=
+
+# To sync users, uncomment the next two settings and update the filter
+# Examples: https://bitwarden.com/help/workspace-directory/#specify-sync-filters
+#GOOGLE_SYNC_USERS=true
+#GOOGLE_SYNC_USER_FILTER=|orgUnitPath='/My OU'

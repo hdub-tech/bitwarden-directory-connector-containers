@@ -13,6 +13,11 @@ ARG GOOGLE_DOMAIN
 ARG GOOGLE_ADMIN_USER_EMAIL
 ARG GOOGLE_CUSTOMER=""
 ARG GOOGLE_SERVICE_USER_EMAIL
+ARG GOOGLE_SYNC_USERS=false
+ARG GOOGLE_SYNC_USER_FILTER=""
+
+# Copy in the sync block
+COPY --chown=$BWUID:$BWUID --chmod=700 sync.json $WORKING_DIR/
 
 ARG OPTIONAL_REBUILD_BWDC_LOGIN_STAGE
 # Run login to initialize the data.json file. bwdc config only works after
@@ -36,10 +41,16 @@ RUN --mount=type=secret,id=bw_clientid,uid=$BWUID \
       --arg googleAdminUserEmail "$GOOGLE_ADMIN_USER_EMAIL" \
       --arg googleCustomer "$GOOGLE_CUSTOMER" \
       --arg googleServiceUserEmail "$GOOGLE_SERVICE_USER_EMAIL" \
+      --arg googleSyncUsers "$GOOGLE_SYNC_USERS" \
+      --arg googleSyncUserFilter "$GOOGLE_SYNC_USER_FILTER" \
+      --slurpfile googleSync "$WORKING_DIR"/sync.json \
        '.[$orgid].directoryConfigurations.gsuite.domain = $googleDomain \
        | .[$orgid].directoryConfigurations.gsuite.adminUser = $googleAdminUserEmail \
        | .[$orgid].directoryConfigurations.gsuite.clientEmail = $googleServiceUserEmail \
-       | .[$orgid].directoryConfigurations.gsuite.customer = $googleCustomer' \
+       | .[$orgid].directoryConfigurations.gsuite.customer = $googleCustomer \
+       | .[$orgid].directorySettings.sync = $googleSync[0] \
+       | .[$orgid].directorySettings.sync.users = $googleSyncUsers \
+       | .[$orgid].directorySettings.sync.userFilter = $googleSyncUserFilter' \
        "$BW_DATAFILE" > "$BW_DATAFILE".new \
     && cp "$BW_DATAFILE" "$BW_DATAFILE".old \
     && cp "$BW_DATAFILE".new "$BW_DATAFILE"
