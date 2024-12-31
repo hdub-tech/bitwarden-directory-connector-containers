@@ -32,7 +32,7 @@ EOM
 
 isLoggedOut() {
   # activeUserId does not exist initially and is set to null on logout
-  [ ! -e "${BW_DATAFILE}" ] || jq -r '.activeUserId == null' "${BW_DATAFILE}"
+  [ ! -e "${BW_DATAFILE}" ] || [[ "$( jq -r '.activeUserId == null' "${BW_DATAFILE}" )" == "true" ]]
 }
 
 # login if not already
