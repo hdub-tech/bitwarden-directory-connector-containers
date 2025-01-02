@@ -1,2 +1,5 @@
+# MD025/single-title/single-h1 : Multiple top-level headings in the same document : https://github.com/DavidAnson/markdownlint/blob/v0.32.1/doc/md025.md
+MD025: false
+
 # MD031/blanks-around-fences : Fenced code blocks should be surrounded by blank lines : https://github.com/DavidAnson/markdownlint/blob/v0.32.1/doc/md031.md
 MD031: false
