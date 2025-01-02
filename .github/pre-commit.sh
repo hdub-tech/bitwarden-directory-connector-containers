@@ -2,9 +2,11 @@
 # ============================================================== #
 # Pre-commit hook should be symlinked to $PROJECT_DIR/.git/hooks!
 #
-# 1. Runs markdownlint-cli2 if *.md files were changed
-# 2. Runs hadolint if Dockerfile files were changed
-# 3. Runs shellcheck if *.sh files were changed
+# 1. Runs markdownlint-cli2 if *.md files were changed*
+# 2. Runs hadolint if Dockerfile files were changed*
+# 3. Runs shellcheck if *.sh files were changed*
+#
+# * = Excludes deleted files
 # ============================================================== #
 
 echo "==> Executing pre-commit hook..."

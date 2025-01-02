@@ -7,6 +7,7 @@ SCRIPT_NAME="$( basename "${0}" )"
 SUPPORTED_BWDC_SYNCS=( gsuite )
 SUPPORTED_SECRETS_MANAGERS=( podman env )
 
+# Configurable args
 BWDC_VERSION=2024.10.0
 BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE=
 SECRETS_MANAGER=
@@ -100,6 +101,7 @@ buildGsuite() {
   cd "${SCRIPT_DIR}"/"${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" \
     || (echo "Missing ${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE} subdir in ${SCRIPT_DIR}" \
        && exit 1)
+
   # shellcheck disable=SC2086
   podman build ${NO_CACHE} \
     ${OPTIONAL_REBUILD_BWDC_LOGIN_STAGE} \
@@ -110,7 +112,7 @@ buildGsuite() {
 }
 
 # Convenient blurb to let you know how to run the container
-# TODO: This doesn't cover running with secrets as ENV vars (env)
+# TODO: This doesn't cover how to run with secrets as ENV vars (-s env)
 usageRun() {
   declare -a SECRETS
   SECRETS+=("--secret=bw_clientid,type=env,target=BW_CLIENTID")
@@ -119,7 +121,7 @@ usageRun() {
 
   cat <<EOM
     To run non-interactively:
-      podman run ${SECRETS[*]} localhost/hdub-tech-bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}:${BWDC_VERSION}
+      podman run ${SECRETS[*]} localhost/hdub-tech-bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}:${BWDC_VERSION} config|test|sync
 
     To run interactively:
       podman run ${SECRETS[*]} -it --entrypoint bash localhost/hdub-tech-bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}:${BWDC_VERSION}

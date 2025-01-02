@@ -27,4 +27,5 @@
 # Sync management settings. Defaults in Dockerfile, the following are overrides
 #GOOGLE_SYNC_REMOVE_DISABLED=true
 #GOOGLE_SYNC_OVERWRITE_EXISTING=true
+# Uncomment the following setting if over 2000 users or groups
 #GOOGLE_SYNC_LARGE_IMPORT=true
