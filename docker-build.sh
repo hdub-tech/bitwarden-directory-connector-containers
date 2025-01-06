@@ -90,7 +90,9 @@ exportSecrets() {
 # Build common base image
 buildBase() {
   podman build ${NO_CACHE} \
-    -t hdub-tech-bwdc-base:"${BWDC_VERSION}" -f Dockerfile
+    -t hdub-tech-bwdc-base:"${BWDC_VERSION}" \
+    -f Dockerfile \
+    || exit 9
 }
 
 # Build gsuite sync image
@@ -108,7 +110,9 @@ buildGsuite() {
     --build-arg-file=argfile.conf \
     --secret=id=bw_clientid,env=BW_CLIENTID \
     --secret=id=bw_clientsecret,env=BW_CLIENTSECRET \
-    -t hdub-tech-bwdc-"${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}":"${BWDC_VERSION}" -f Dockerfile
+    -t hdub-tech-bwdc-"${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}":"${BWDC_VERSION}" \
+    -f Dockerfile \
+    || exit 10
 }
 
 # Convenient blurb to let you know how to run the container
