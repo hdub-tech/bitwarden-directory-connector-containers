@@ -101,7 +101,7 @@ buildBase() {
     || exit 9
 }
 
-# Build gsuite sync image
+# Build gsuite sync image(s)
 buildGsuite() {
   buildBase
   exportSecrets bw_clientid bw_clientsecret
@@ -110,17 +110,19 @@ buildGsuite() {
     || (echo "Missing ${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE} subdir in ${SCRIPT_DIR}" \
        && exit 1)
 
-  # shellcheck disable=SC2086
-  podman build ${NO_CACHE} \
-    ${OPTIONAL_REBUILD_BWDC_LOGIN_STAGE} \
-    --build-arg-file=argfile.conf \
-    --secret=id=bw_clientid,env=BW_CLIENTID \
-    --secret=id=bw_clientsecret,env=BW_CLIENTSECRET \
-    --build-arg BASE_VERSION="${BASE_VERSION}" \
-    --build-arg VERSION="${GSUITE_VERSION}" \
-    -t "hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}":"${GSUITE_VERSION}" \
-    -f Dockerfile \
-    || exit 10
+  for conf in *.conf; do
+    # shellcheck disable=SC2086
+    podman build ${NO_CACHE} \
+      ${OPTIONAL_REBUILD_BWDC_LOGIN_STAGE} \
+      --build-arg-file="${conf}" \
+      --secret=id=bw_clientid,env=BW_CLIENTID \
+      --secret=id=bw_clientsecret,env=BW_CLIENTSECRET \
+      --build-arg BASE_VERSION="${BASE_VERSION}" \
+      --build-arg VERSION="${GSUITE_VERSION}" \
+      -t "hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-${conf%.conf}":"${GSUITE_VERSION}" \
+      -f Dockerfile \
+      || exit 10
+  done
 }
 
 # Convenient blurb to let you know how to run the container
@@ -142,10 +144,10 @@ usageRun() {
   TYPE_VERSION="${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE@U}_VERSION"
   cat <<EOM
     To run non-interactively:
-      podman run ${SECRETS[*]} localhost/hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}:${!TYPE_VERSION} config|test|sync
+      podman run ${SECRETS[*]} localhost/hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${!TYPE_VERSION} config|test|sync
 
     To run interactively:
-      podman run ${SECRETS[*]} -it --entrypoint bash localhost/hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}:${!TYPE_VERSION}
+      podman run ${SECRETS[*]} -it --entrypoint bash localhost/hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${!TYPE_VERSION}
 EOM
 }
 
