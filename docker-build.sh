@@ -13,7 +13,7 @@ GSUITE_VERSION="1.0.0-alpha"
 # Configurable args
 BWDC_VERSION="${DEFAULT_BWDC_VERSION}"
 BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE=
-SECRETS_MANAGER=
+SECRETS_MANAGER="env"
 NO_CACHE=
 OPTIONAL_REBUILD_BWDC_LOGIN_STAGE=
 
@@ -124,19 +124,28 @@ buildGsuite() {
 }
 
 # Convenient blurb to let you know how to run the container
-# TODO: This doesn't cover how to run with secrets as ENV vars (-s env)
 usageRun() {
   declare -a SECRETS
-  SECRETS+=("--secret=bw_clientid,type=env,target=BW_CLIENTID")
-  SECRETS+=("--secret=bw_clientsecret,type=env,target=BW_CLIENTSECRET")
-  SECRETS+=("--secret=bw_key,type=env,target=BW_KEY")
+  case "${SECRETS_MANAGER}" in
+    "env" )
+      SECRETS+=("--env BW_CLIENTID")
+      SECRETS+=("--env BW_CLIENTSECRET")
+      [[ "gsuite" == "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" ]] && SECRETS+=("--env BW_KEY")
+      ;;
+    "podman" )
+      SECRETS+=("--secret=bw_clientid,type=env,target=BW_CLIENTID")
+      SECRETS+=("--secret=bw_clientsecret,type=env,target=BW_CLIENTSECRET")
+      [[ "gsuite" == "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" ]] && SECRETS+=("--secret=bw_key,type=env,target=BW_KEY")
+      ;;
+  esac
 
+  TYPE_VERSION="${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE@U}_VERSION"
   cat <<EOM
     To run non-interactively:
-      podman run ${SECRETS[*]} localhost/hdub-tech-bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}:${BWDC_VERSION} config|test|sync
+      podman run ${SECRETS[*]} localhost/hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}:${!TYPE_VERSION} config|test|sync
 
     To run interactively:
-      podman run ${SECRETS[*]} -it --entrypoint bash localhost/hdub-tech-bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}:${BWDC_VERSION}
+      podman run ${SECRETS[*]} -it --entrypoint bash localhost/hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}:${!TYPE_VERSION}
 EOM
 }
 
