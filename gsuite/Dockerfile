@@ -1,5 +1,10 @@
-ARG BWDC_VERSION=2024.10.0
-FROM hdub-tech-bwdc-base:$BWDC_VERSION
+ARG BASE_VERSION="dev"
+FROM hdub-tech/bwdc-base:$BASE_VERSION
+
+ARG VERSION="dev"
+LABEL org.opencontainers.image.authors="hdub-tech@github"
+LABEL org.opencontainers.image.source="https://github.com/hdub-tech/bitwarden-directory-connector-images/blob/main/gsuite/Dockerfile"
+LABEL org.opencontainers.image.version=$VERSION
 
 # User
 ARG BWUSER=bitwarden

@@ -6,9 +6,12 @@ SCRIPT_DIR="$( cd "$( dirname "${0}" )" && pwd )"
 SCRIPT_NAME="$( basename "${0}" )"
 SUPPORTED_BWDC_SYNCS=( gsuite )
 SUPPORTED_SECRETS_MANAGERS=( podman env )
+DEFAULT_BWDC_VERSION=2024.10.0
+BASE_VERSION="1.0.0-alpha"
+GSUITE_VERSION="1.0.0-alpha"
 
 # Configurable args
-BWDC_VERSION=2024.10.0
+BWDC_VERSION="${DEFAULT_BWDC_VERSION}"
 BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE=
 SECRETS_MANAGER=
 NO_CACHE=
@@ -19,11 +22,12 @@ USAGE_ERROR=255
 usage() {
   cat <<EOM
   USAGE:
-    ${SCRIPT_NAME} -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE -s SECRETS_MANAGER [-n] [-r]
+    ${SCRIPT_NAME} -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE [-s SECRETS_MANAGER] [-b BWDC_VERSION] [-n] [-r]
 
    - BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE is one of: ${SUPPORTED_BWDC_SYNCS[*]}
    - SECRETS_MANAGER is one of: ${SUPPORTED_SECRETS_MANAGERS[*]}
-     Note: "env" indicates that the secrets are already exported to the environment.
+     Note: "env" (default) indicates that the secrets are already exported to the environment.
+   - BWDC_VERSION (default=${DEFAULT_BWDC_VERSION}) is X.Y.Z format and one of: https://github.com/bitwarden/directory-connector/releases
    - Use "-n" to build all Docker images without cache (--no-cache)
    - Use "-r" to rebuild the final run stage of the type specific container (allows you to test login)
 
@@ -66,7 +70,7 @@ exportPodmanSecrets() {
 confirmEnvSecrets() {
   for env in "$@"; do
     if [ -z "${!env}" ]; then  # The ! allows Indirect Ref to env var
-      echo "Please export ${env} if using SECRETS_MANAGER=env"
+      echo "SECRETS_MANAGER=env but ${env} not exported in this environment"
       exit 6
     fi
   done
@@ -90,7 +94,9 @@ exportSecrets() {
 # Build common base image
 buildBase() {
   podman build ${NO_CACHE} \
-    -t hdub-tech-bwdc-base:"${BWDC_VERSION}" \
+    --build-arg VERSION="${BASE_VERSION}" \
+    --build-arg BWDC_VERSION="${BWDC_VERSION}" \
+    -t hdub-tech/bwdc-base:"${BASE_VERSION}" \
     -f Dockerfile \
     || exit 9
 }
@@ -110,7 +116,9 @@ buildGsuite() {
     --build-arg-file=argfile.conf \
     --secret=id=bw_clientid,env=BW_CLIENTID \
     --secret=id=bw_clientsecret,env=BW_CLIENTSECRET \
-    -t hdub-tech-bwdc-"${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}":"${BWDC_VERSION}" \
+    --build-arg BASE_VERSION="${BASE_VERSION}" \
+    --build-arg VERSION="${GSUITE_VERSION}" \
+    -t "hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}":"${GSUITE_VERSION}" \
     -f Dockerfile \
     || exit 10
 }
@@ -145,7 +153,7 @@ arrayContains() {
   [[ " ${array[*]} " =~ [[:space:]]${search_item}[[:space:]] ]]
 }
 
-while getopts "ht:s:nr" opt; do
+while getopts "ht:s:b:nr" opt; do
   case "${opt}" in
     "h" )
       # h = help
@@ -172,6 +180,10 @@ while getopts "ht:s:nr" opt; do
     "r" )
       # r = rebuild run stage
       OPTIONAL_REBUILD_BWDC_LOGIN_STAGE="--build-arg OPTIONAL_REBUILD_BWDC_LOGIN_STAGE=\"$( date +%s )\""
+      ;;
+    "b" )
+      # b = BWDC version
+      BWDC_VERSION="${OPTARG}"
       ;;
     * ) usage "${USAGE_ERROR}" ;;
   esac
