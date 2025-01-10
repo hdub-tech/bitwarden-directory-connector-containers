@@ -23,7 +23,7 @@ MARKDOWNLINT_CLI2_VERSION="v0.16.0"
 MD_FILES_CHANGED=$( echo "$FILES_CHANGED" | awk '{if ($1 ~ /.*md.*/) {print "true"; exit}}' )
 if [ "$MD_FILES_CHANGED" == "true" ]; then
   echo "==> Executing markdownlint-cli2 on changed **/*.md* files..."
-  "$PODMAN_OR_DOCKER" run -v "$PROJECT_DIR":/workdir "$MARKDOWNLINT_CLI2_REPO":"$MARKDOWNLINT_CLI2_VERSION" && echo "==> markdownlint-cli2 completed successfully." || FAILED_TESTS+=("markdownlint-cli")
+  "$PODMAN_OR_DOCKER" run --rm -v "$PROJECT_DIR":/workdir "$MARKDOWNLINT_CLI2_REPO":"$MARKDOWNLINT_CLI2_VERSION" && echo "==> markdownlint-cli2 completed successfully." || FAILED_TESTS+=("markdownlint-cli")
 fi
 
 # =================================== #
