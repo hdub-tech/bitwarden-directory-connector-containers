@@ -1,4 +1,4 @@
-FROM debian:12-slim
+FROM docker.io/debian:12-slim
 
 ARG VERSION="dev"
 LABEL org.opencontainers.image.authors="hdub-tech@github"
