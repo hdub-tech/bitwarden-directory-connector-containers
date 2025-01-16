@@ -38,18 +38,25 @@ EOM
   exit "${RC}"
 }
 
-# uppercase all arguments
-uppercase() {
-  if [ "$#" -lt 1 ]; then
-    echo "uppercase requires at least 1 arg"
+# 1: functionName, 2: numArgsActual, 3: numArgsExpected
+functionArgCheck() {
+  if [ "${2}" -lt "${3}" ]; then
+    echo "${1} requires at least ${3} args"
     exit 4
   fi
+}
+
+# uppercase all arguments
+uppercase() {
+  functionArgCheck "${0}" $# 1
 
   echo "$@" | tr '[:lower:]' '[:upper:]'
 }
 
 # extract the specified podman secrets to a corresponding environment var
 exportPodmanSecrets() {
+  functionArgCheck "${0}" $# 1
+
   for psecret in "$@" ; do
     if podman secret exists "${psecret}"; then
       declare -a FILE_AND_ID
@@ -68,6 +75,8 @@ exportPodmanSecrets() {
 
 # env secrets SHOULD already be exported in this env and this confirms it
 confirmEnvSecrets() {
+  functionArgCheck "${0}" $# 1
+
   for env in "$@"; do
     if [ -z "${!env}" ]; then  # The ! allows Indirect Ref to env var
       echo "SECRETS_MANAGER=env but ${env} not exported in this environment"
@@ -78,10 +87,7 @@ confirmEnvSecrets() {
 
 # Generic export secrets function with error handling, calls exports by type
 exportSecrets() {
-  if [ "$#" -lt 1 ]; then
-    echo "USAGE: ${0} secretid1 [secretid2 ... secretidN]"
-    exit 7
-  fi
+  functionArgCheck "${0}" $# 1
 
   case "${SECRETS_MANAGER}" in
     "podman" ) exportPodmanSecrets "$@" ;;
@@ -106,11 +112,13 @@ buildGsuite() {
   buildBase
   exportSecrets bw_clientid bw_clientsecret
 
-  cd "${SCRIPT_DIR}"/"${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" \
-    || (echo "Missing ${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE} subdir in ${SCRIPT_DIR}" \
-       && exit 1)
+  cd "${SCRIPT_DIR}"/"${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" || exit 1
+
+  # Exit if no conf files
+  ! ls ./*.conf && exit 7
 
   for conf in *.conf; do
+    conf_name="$( basename "${conf%.conf}" )"
     # shellcheck disable=SC2086
     podman build ${NO_CACHE} \
       ${OPTIONAL_REBUILD_BWDC_LOGIN_STAGE} \
@@ -119,9 +127,9 @@ buildGsuite() {
       --secret=id=bw_clientsecret,env=BW_CLIENTSECRET \
       --build-arg BASE_VERSION="${BASE_VERSION}" \
       --build-arg VERSION="${GSUITE_VERSION}" \
-      -t "hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-${conf%.conf}":"${GSUITE_VERSION}" \
+      -t "hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-${conf_name}":"${GSUITE_VERSION}" \
       -f Dockerfile \
-      || exit 10
+      || exit 8
   done
 }
 
@@ -152,11 +160,9 @@ EOM
 }
 
 # Simplistic check for simplistic use case
+# USAGE: arrayContains ARRAY SEARCH_ITEM
 arrayContains() {
-  if [ "$#" -ne 2 ]; then
-    echo "USAGE: ${0} ARRAY SEARCH_ITEM"
-    exit 8
-  fi
+  functionArgCheck "${0}" $# 2
 
   array="${1}"
   search_item="${2}"
@@ -205,6 +211,7 @@ if [ -z "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" ] || [ -z "${SECRETS_MANAGER}
 else
   case "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" in
     "gsuite" ) buildGsuite ;;
+    * ) usage "${USAGE_ERROR}" ;;
   esac
 
   usageRun
