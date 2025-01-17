@@ -23,7 +23,7 @@ usage() {
        (should be done in the type specific Dockerfile)
        AND is a supported value (Currently only supports: ${SUPPORTED_BWDC_SYNCS[*]})
     3. BW_CLIENTID and BW_CLIENTSECRET environment variables must be set
-    4. If Sync type is gsuite, BW_KEY environment variable must be set
+    4. If Sync type is gsuite, BW_GSUITEKEY environment variable must be set
     5. Only one of the above listed arguments should be provided
 
   Error detected from above list: ${1}
@@ -83,8 +83,8 @@ config() {
   # Update organizationId in directoryConfigurations
   BW_DATAFILE_CONTENTS="$( jq -r --arg orgid "${BW_ORGUUID}" '.[$orgid].directorySettings.organizationId = $orgid' "${BW_DATAFILE}" )"
   case "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" in
-    "gsuite" | "azure" )
-      if [ -z "${BW_KEY}" ]; then
+    "gsuite" )
+      if [ -z "${BW_GSUITEKEY}" ]; then
         usage 4
       fi
 
@@ -92,7 +92,7 @@ config() {
       # gsub to put them back is the only way I could find to keep jq from
       # double escaping and therefore causing the openssl DECODER error from
       # happening... and I tried a metric ton of things
-      export BW_KEY_SUB="${BW_KEY//\\n/::}"
+      export BW_KEY_SUB="${BW_GSUITEKEY//\\n/::}"
       BW_DATAFILE_CONTENTS="$( echo "${BW_DATAFILE_CONTENTS}" | jq -r --arg orgid "${BW_ORGUUID}" '.[$orgid].directoryConfigurations.gsuite.privateKey = ( $ENV.BW_KEY_SUB | gsub("::"; "\n")? )' )"
   esac
 

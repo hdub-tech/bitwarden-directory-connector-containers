@@ -62,7 +62,7 @@ type.  _Currently only supports `gsuite`._
      2. GSUITE ONLY: The private key for your Google cloud project service user.
         ```bash
         # Leading space! ONE new line at the end!
-         echo -n "-----BEGIN PRIVATE KEY-----\nMIIEvalueofGSuitePrivatekey\n-----END PRIVATE KEY-----\n" | podman secret create bw_key -
+         echo -n "-----BEGIN PRIVATE KEY-----\nMIIEvalueofGSuitePrivatekey\n-----END PRIVATE KEY-----\n" | podman secret create bw_gsuitekey -
         ```
 
    b. OPTION B: Set secrets as environment variables. The variables must be
@@ -81,7 +81,7 @@ type.  _Currently only supports `gsuite`._
      2. GSUITE ONLY: The private key for your Google cloud project service user.
         ```bash
         # Leading space! ONE new line at the end!
-         export BW_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvalueofGSuitePrivatekey\n-----END PRIVATE KEY-----\n"
+         export BW_GSUITEKEY="-----BEGIN PRIVATE KEY-----\nMIIEvalueofGSuitePrivatekey\n-----END PRIVATE KEY-----\n"
         ```
 
 ## Build images

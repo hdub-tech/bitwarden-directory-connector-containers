@@ -140,12 +140,12 @@ usageRun() {
     "env" )
       SECRETS+=("--env BW_CLIENTID")
       SECRETS+=("--env BW_CLIENTSECRET")
-      [[ "gsuite" == "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" ]] && SECRETS+=("--env BW_KEY")
+      [[ "gsuite" == "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" ]] && SECRETS+=("--env BW_GSUITEKEY")
       ;;
     "podman" )
       SECRETS+=("--secret=bw_clientid,type=env,target=BW_CLIENTID")
       SECRETS+=("--secret=bw_clientsecret,type=env,target=BW_CLIENTSECRET")
-      [[ "gsuite" == "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" ]] && SECRETS+=("--secret=bw_key,type=env,target=BW_KEY")
+      [[ "gsuite" == "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" ]] && SECRETS+=("--secret=bw_gsuitekey,type=env,target=BW_GSUITEKEY")
       ;;
   esac
 
