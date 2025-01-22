@@ -28,7 +28,7 @@ usage() {
    - SECRETS_MANAGER is one of: ${SUPPORTED_SECRETS_MANAGERS[*]}
      Note: "env" (default) indicates that the secrets are already exported to the environment.
    - BWDC_VERSION (default=${DEFAULT_BWDC_VERSION}) is X.Y.Z format and one of: https://github.com/bitwarden/directory-connector/releases
-   - Use "-n" to build all Docker images without cache (--no-cache)
+   - Use "-n" to build all container images without cache (--no-cache)
    - Use "-r" to rebuild the final run stage of the type specific container (allows you to test login)
 
 EOM
@@ -103,7 +103,7 @@ buildBase() {
     --build-arg VERSION="${BASE_VERSION}" \
     --build-arg BWDC_VERSION="${BWDC_VERSION}" \
     -t hdub-tech/bwdc-base:"${BASE_VERSION}" \
-    -f Dockerfile \
+    -f Containerfile \
     || exit 9
 }
 
@@ -128,7 +128,7 @@ buildGsuite() {
       --build-arg BASE_VERSION="${BASE_VERSION}" \
       --build-arg VERSION="${GSUITE_VERSION}" \
       -t "hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-${conf_name}":"${GSUITE_VERSION}" \
-      -f Dockerfile \
+      -f Containerfile \
       || exit 8
   done
 }

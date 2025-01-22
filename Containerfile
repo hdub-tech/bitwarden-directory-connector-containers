@@ -2,7 +2,7 @@ FROM docker.io/debian:12-slim
 
 ARG VERSION="dev"
 LABEL org.opencontainers.image.authors="hdub-tech@github"
-LABEL org.opencontainers.image.source="https://github.com/hdub-tech/bitwarden-directory-connector-images/blob/main/Dockerfile"
+LABEL org.opencontainers.image.source="https://github.com/hdub-tech/bitwarden-directory-connector-containers/blob/main/Containerfile"
 LABEL org.opencontainers.image.version=$VERSION
 
 # Install dependencies

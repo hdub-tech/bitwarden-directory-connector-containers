@@ -33,7 +33,7 @@ usage() {
 
   Where:
     * -m MODE is one of:
-      * build: Builds one docker image per conf per supported bwdc directory type
+      * build: Builds one container image per conf per supported bwdc directory type
         (Supported: ${SUPPORTED_BWDC_TYPES[@]})
       * config: Builds the above images and runs each container, finishing the
         necessary configuration using the secrets provided
@@ -103,11 +103,11 @@ copyConfigs() {
   done
 }
 
-# Build the docker images for this type (builds all confs for all types)
+# Build the container images for this type (builds all confs for all types)
 buildImages() {
   for type in "${SUPPORTED_BWDC_TYPES[@]}"; do
     if [ -d "${PROJECT_CONFS_DIR}/${type}" ]; then
-      "${SCRIPT_DIR}/docker-build.sh" -t "${type}" -s "${SECRETS_MANAGER}" -b "${BWDC_VERSION}" || exit 9
+      "${SCRIPT_DIR}/container-build.sh" -t "${type}" -s "${SECRETS_MANAGER}" -b "${BWDC_VERSION}" || exit 9
     fi
   done
 

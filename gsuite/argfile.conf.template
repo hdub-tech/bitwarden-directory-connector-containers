@@ -34,7 +34,7 @@ GOOGLE_SERVICE_USER_EMAIL=your_gcloud_serviceuser@your_gcloud_bitwardens_app.iam
 # Bitwarden Settings > Directory > Group Filter
 #GOOGLE_SYNC_GROUP_FILTER=|email=admin@example.com
 
-# The following are sync management settings. Defaults in Dockerfile, the
+# The following are sync management settings. Defaults in Containerfile, the
 # following are overrides.
 # Bitwarden Settings > Sync > Remove disabled users during sync checkbox
 #GOOGLE_SYNC_REMOVE_DISABLED=true

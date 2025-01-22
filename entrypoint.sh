@@ -20,7 +20,7 @@ usage() {
   With the following expectations:
     1. bwdc must be on the path
     2. BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE environment variable must be set
-       (should be done in the type specific Dockerfile)
+       (should be done in the type specific Containerfile)
        AND is a supported value (Currently only supports: ${SUPPORTED_BWDC_SYNCS[*]})
     3. BW_CLIENTID and BW_CLIENTSECRET environment variables must be set
     4. If Sync type is gsuite, BW_GSUITEKEY environment variable must be set
