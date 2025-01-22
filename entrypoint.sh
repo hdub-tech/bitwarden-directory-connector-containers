@@ -6,6 +6,7 @@ SUPPORTED_BWDC_SYNCS=( gsuite )
 BW_DATAFILE=
 BW_ORGUUID=
 ERROR_FILE=/tmp/entrypoint.log
+MODE=
 
 usage() {
   cat <<EOM
@@ -121,13 +122,26 @@ test() {
   config
   login
   bwdc test || test_failed=true
-  # Always logout
-  logout
+  # Logout if not about to sync, even if test failed
+  [ "sync" != "${MODE}" ] && logout
 
   if [ -n "${test_failed}" ]; then
     exit 9
   else
-    echo "Test completed successfully"
+    echo "'bwdc test' completed successfully"
+  fi
+}
+
+sync() {
+  test
+  bwdc sync || test_failed=true
+  # Always logout
+  logout
+
+  if [ -n "${test_failed}" ]; then
+    exit 10
+  else
+    echo "'bwdc sync' completed successfully"
   fi
 }
 
@@ -136,12 +150,14 @@ if [ "$#" -ne "1" ]; then
 else
   case "${1}" in
     "config" )
-      config ;;
+      MODE="config" ;;
     "test" )
-      test ;;
+      MODE="test" ;;
     "sync" )
-      echo TODO sync ;;
+      MODE="sync" ;;
     "*" )
       usage 5 ;;
   esac
 fi
+
+[ -n "${MODE}" ] && ${MODE}
