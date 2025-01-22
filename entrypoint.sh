@@ -82,6 +82,8 @@ config() {
 
   # Update organizationId in directoryConfigurations
   BW_DATAFILE_CONTENTS="$( jq -r --arg orgid "${BW_ORGUUID}" '.[$orgid].directorySettings.organizationId = $orgid' "${BW_DATAFILE}" )"
+
+  # Do type specific substitutions
   case "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" in
     "gsuite" )
       if [ -z "${BW_GSUITEKEY}" ]; then
@@ -94,8 +96,10 @@ config() {
       # happening... and I tried a metric ton of things
       export BW_KEY_SUB="${BW_GSUITEKEY//\\n/::}"
       BW_DATAFILE_CONTENTS="$( echo "${BW_DATAFILE_CONTENTS}" | jq -r --arg orgid "${BW_ORGUUID}" '.[$orgid].directoryConfigurations.gsuite.privateKey = ( $ENV.BW_KEY_SUB | gsub("::"; "\n")? )' )"
+      ;;
   esac
 
+  # Backup original data.json before overwriting it
   cp "${BW_DATAFILE}" "${BW_DATAFILE}.old"
   echo "${BW_DATAFILE_CONTENTS}" > "${BW_DATAFILE}"
 

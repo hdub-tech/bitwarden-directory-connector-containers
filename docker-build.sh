@@ -138,9 +138,7 @@ usageRun() {
   declare -a SECRETS
   case "${SECRETS_MANAGER}" in
     "env" )
-      SECRETS+=("--env BW_CLIENTID")
-      SECRETS+=("--env BW_CLIENTSECRET")
-      [[ "gsuite" == "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" ]] && SECRETS+=("--env BW_GSUITEKEY")
+      SECRETS+=("--env-file ${SCRIPT_DIR}/${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}/env.vars")
       ;;
     "podman" )
       SECRETS+=("--secret=bw_clientid,type=env,target=BW_CLIENTID")
