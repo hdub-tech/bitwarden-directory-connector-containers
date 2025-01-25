@@ -1,34 +1,63 @@
 #!/bin/bash
 
+# Constants
 #BITWARDENCLI_CONNECTOR_DEBUG=true
 SCRIPT_NAME="$( basename "${0}" )"
 SUPPORTED_BWDC_SYNCS=( gsuite )
 BW_DATAFILE=
 BW_ORGUUID=
 ERROR_FILE=/tmp/entrypoint.log
-MODE=
+
+# Configurable args
+CONFIG=
+TEST=
+SYNC=
+# TODO -z: Zero out secrets in config file when done/error (Specifically
+# useful for people using mounted data.json which did not contain secrets
+# before running this script)
 
 usage() {
   cat <<EOM
   USAGE:
-    ${SCRIPT_NAME} config|test|sync
+    ${SCRIPT_NAME} [-c] [-t] [-s] [-h]
 
-  Where:
-    * config: Finishes necessary configuration using the secrets provided
-    * test: Does the above config + runs "bwdc test"
-    * sync: Does the above config and test + runs "bwdc sync"
+  Where at least one of the following is required:
+    * -c: (aka config) - Configures data.json with env var secrets. (Use this
+                         option when using the config file method, or the BYO
+                         data.json method and the data.json does not contain
+                         secrets. Omit this option if using your own data.json
+                         and it already has the secrets populated)
+    * -t: (aka test)   - Runs "bwdc test", with bwdc login if necessary, and
+                         bwdc logout when completed (even if error).
+    * -s: (aka sync)   - Runs "bwdc sync", with bwdc login if necessary, and
+                         bwdc logout when completed (even if error). THIS DOES
+                         NOT RUN A TEST FIRST!
+    * -h: (aka help)   - Display this usage message
 
   With the following expectations:
     1. bwdc must be on the path
     2. BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE environment variable must be set
-       (should be done in the type specific Containerfile)
-       AND is a supported value (Currently only supports: ${SUPPORTED_BWDC_SYNCS[*]})
+       (should be done in the type specific Containerfile) to use config option
+       AND must be a supported value (Currently only supports:
+       ${SUPPORTED_BWDC_SYNCS[*]})
     3. BW_CLIENTID and BW_CLIENTSECRET environment variables must be set
     4. If Sync type is gsuite, BW_GSUITEKEY environment variable must be set
-    5. Only one of the above listed arguments should be provided
+    5. At least one of the above listed arguments should be provided
 
-  Error detected from above list: ${1}
+  Examples (NOTE: this script always executes in config>test>sync order
+  regardless of the order of the options supplied to it. It WILL exit early if a
+  step fails):
+
+    Configure the data.json file with the secrets, run bwdc test, and run bwdc sync
+      ${0} -c -t -s
+
+    Configure the data.json file with the secrets and run bwdc test
+      ${0} -c -t
+
+    Run a test and run a sync, but do NOT configure data.json
+      ${0} -t -s
 EOM
+  [ "0" -ne "${1}" ] && echo "Error detected from above list: ${1}"
   exit "${1}"
 }
 
@@ -52,22 +81,23 @@ logout() {
 }
 
 preReqs() {
-  # Make sure we have bwdc
+  # Make sure we have bwdc for all modes
   if which bwdc; then
     BW_DATAFILE="$( bwdc data-file 2>/dev/null )"
   
-    # Make sure supported Directory Type set in env var
-    if [ -n "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" ] \
-      && [[ " ${SUPPORTED_BWDC_SYNCS[*]} " =~ [[:space:]]${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}[[:space:]] ]]; then
+    # Make sure Client Id and Secret set in env vars for login
+    if [ -n "${BW_CLIENTID}" ] && [ -n "${BW_CLIENTSECRET}" ]; then
+      BW_ORGUUID="${BW_CLIENTID#organization.}"
 
-      # Make sure Client Id and Secret set in env vars for login
-      if [ -n "${BW_CLIENTID}" ] && [ -n "${BW_CLIENTSECRET}" ]; then
-        BW_ORGUUID="${BW_CLIENTID#organization.}"
-      else
-        usage 3
+      # Make sure supported Directory Type set in env var for config
+      if [ -n "${CONFIG}" ] \
+        && [ -n "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" ] \
+        && [[ ! " ${SUPPORTED_BWDC_SYNCS[*]} " =~ [[:space:]]${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}[[:space:]] ]]; then
+
+        usage 2
       fi
     else
-      usage 2
+      usage 3
     fi
   else
     usage 1
@@ -118,12 +148,11 @@ config() {
   fi
 }
 
-test() {
-  config
+bwdcTest() {
   login
   bwdc test || test_failed=true
-  # Logout if not about to sync, even if test failed
-  [ "sync" != "${MODE}" ] && logout
+  # Always logout
+  logout
 
   if [ -n "${test_failed}" ]; then
     exit 9
@@ -132,8 +161,8 @@ test() {
   fi
 }
 
-sync() {
-  test
+bwdcSync() {
+  login
   bwdc sync || test_failed=true
   # Always logout
   logout
@@ -145,19 +174,26 @@ sync() {
   fi
 }
 
-if [ "$#" -ne "1" ]; then
-  usage 5
-else
-  case "${1}" in
-    "config" )
-      MODE="config" ;;
-    "test" )
-      MODE="test" ;;
-    "sync" )
-      MODE="sync" ;;
-    "*" )
+while getopts "ctsh" opt; do
+  case "${opt}" in
+    "c" )
+      CONFIG=true ;;
+    "t" )
+      TEST=true ;;
+    "s" )
+      SYNC=true ;;
+    "h" )
+      usage 0 ;;
+    * )
       usage 5 ;;
   esac
-fi
+done
 
-[ -n "${MODE}" ] && ${MODE}
+if [ -z "${CONFIG}" ] && [ -z "${TEST}" ] && [ -z "${SYNC}" ]; then
+  usage 5
+else
+  preReqs
+  [ -n "${CONFIG}" ] && config
+  [ -n "${TEST}" ] && bwdcTest
+  [ -n "${SYNC}" ] && bwdcSync
+fi

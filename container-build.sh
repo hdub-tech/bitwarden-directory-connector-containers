@@ -2,6 +2,7 @@
 
 # TODO convert to compose file?
 
+# Constants
 SCRIPT_DIR="$( cd "$( dirname "${0}" )" && pwd )"
 SCRIPT_NAME="$( basename "${0}" )"
 SUPPORTED_BWDC_SYNCS=( gsuite )
@@ -13,6 +14,7 @@ GSUITE_VERSION="1.0.0-alpha"
 # Configurable args
 BWDC_VERSION="${DEFAULT_BWDC_VERSION}"
 BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE=
+BASE_ONLY=
 SECRETS_MANAGER="env"
 NO_CACHE=
 OPTIONAL_REBUILD_BWDC_LOGIN_STAGE=
@@ -22,9 +24,13 @@ USAGE_ERROR=255
 usage() {
   cat <<EOM
   USAGE:
-    ${SCRIPT_NAME} -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE [-s SECRETS_MANAGER] [-b BWDC_VERSION] [-n] [-r]
+    ${SCRIPT_NAME} -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE|-o [-s SECRETS_MANAGER] [-b BWDC_VERSION] [-n] [-r]
 
-   - BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE is one of: ${SUPPORTED_BWDC_SYNCS[*]}
+   - At least one method flag is required:
+     - Use -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE for the "config file"
+       method, where BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE is one of:
+       ${SUPPORTED_BWDC_SYNCS[*]}
+     - Use -o for the "bring your own data.json" method
    - SECRETS_MANAGER is one of: ${SUPPORTED_SECRETS_MANAGERS[*]}
      Note: "env" (default) indicates that the secrets are already exported to the environment.
    - BWDC_VERSION (default=${DEFAULT_BWDC_VERSION}) is X.Y.Z format and one of: https://github.com/bitwarden/directory-connector/releases
@@ -138,6 +144,7 @@ usageRun() {
   declare -a SECRETS
   case "${SECRETS_MANAGER}" in
     "env" )
+      [ -n "${BASE_ONLY}" ] && BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE="\$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE"
       SECRETS+=("--env-file ${SCRIPT_DIR}/${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}/env.vars")
       ;;
     "podman" )
@@ -147,14 +154,39 @@ usageRun() {
       ;;
   esac
 
-  TYPE_VERSION="${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE@U}_VERSION"
-  cat <<EOM
-    To run non-interactively:
-      podman run ${SECRETS[*]} localhost/hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${!TYPE_VERSION} config|test|sync
+  cat <<-BASE
+	===========================================================================
+	  To run the generic base container using your own data.json file
+	  non-interactively, mount the directory containing your data.json file
+	  ==> THIS WILL RESULT IN DATA.JSON BEING MODIFIED (bwdc behavior). <==
 
-    To run interactively:
-      podman run ${SECRETS[*]} -it --entrypoint bash localhost/hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${!TYPE_VERSION}
-EOM
+	    podman run ${SECRETS[*]} --rm --volume /PATH/TO/YOUR/DATA-JSON-DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id localhost/hdub-tech/bwdc-base:${BASE_VERSION} [-c] [-t] [-s] [-h]
+
+	----------------------------------------------------------------------------
+	  To run the generic base container using your own data.json file
+	  interactively, mount the directory containing your data.json file
+	  ==> THIS WILL RESULT IN DATA.JSON BEING MODIFIED IF YOU USE bwdc <==
+
+	    podman run ${SECRETS[*]} -it --rm --entrypoint bash --volume /PATH/TO/YOUR/DATA-JSON-DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id localhost/hdub-tech/bwdc-base:${BASE_VERSION}
+	BASE
+
+  if [ -z "${BASE_ONLY}" ]; then
+    TYPE_VERSION="${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE@U}_VERSION"
+    cat <<-TYPE
+
+	----------------------------------------------------------------------------
+	  To run the type-conf specific container non-interactively (update CONFNAME):
+
+	    podman run ${SECRETS[*]} --rm localhost/hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${!TYPE_VERSION} [-c] [-t] [-s] [-h]
+
+	----------------------------------------------------------------------------
+	  To run the type-conf specific container interactively (update CONFNAME):
+
+	    podman run ${SECRETS[*]} -it --entrypoint bash --rm localhost/hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${!TYPE_VERSION}
+
+	TYPE
+  fi
+  echo "==========================================================================="
 }
 
 # Simplistic check for simplistic use case
@@ -168,7 +200,7 @@ arrayContains() {
   [[ " ${array[*]} " =~ [[:space:]]${search_item}[[:space:]] ]]
 }
 
-while getopts "ht:s:b:nr" opt; do
+while getopts "ht:os:b:nr" opt; do
   case "${opt}" in
     "h" )
       # h = help
@@ -181,6 +213,9 @@ while getopts "ht:s:b:nr" opt; do
         usage 1
       fi
       ;;
+    "o" )
+      # = only build base
+      BASE_ONLY=true ;;
     "s" )
       # s = secret manager
       if arrayContains "${SUPPORTED_SECRETS_MANAGERS[*]}" "${OPTARG}" ; then
@@ -204,13 +239,21 @@ while getopts "ht:s:b:nr" opt; do
   esac
 done
 
-if [ -z "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" ] || [ -z "${SECRETS_MANAGER}" ]; then
+if [ -z "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" ] && [ -z "${BASE_ONLY}" ]; then
   usage 3
 else
-  case "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" in
-    "gsuite" ) buildGsuite ;;
-    * ) usage "${USAGE_ERROR}" ;;
-  esac
+  if [ -z "${SECRETS_MANAGER}" ]; then
+    usage 10
+  else
+    if [ -n "${BASE_ONLY}" ]; then
+      buildBase
+    else
+      case "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" in
+        "gsuite" ) buildGsuite ;;
+        * ) usage "${USAGE_ERROR}" ;;
+      esac
+    fi
 
-  usageRun
+    usageRun
+  fi
 fi
