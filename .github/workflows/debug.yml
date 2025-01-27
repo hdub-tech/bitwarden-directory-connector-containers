@@ -1,0 +1,20 @@
+# TODO: Remove temp debug workflow
+
+name: DEBUG
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      actions/debug
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Debug
+        run: set
