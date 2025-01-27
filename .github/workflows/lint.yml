@@ -1,24 +1,30 @@
-# TODO Description
-
-name: WIP Linting
+name: Linting
+description: Runs markdownling-cli2, hadolint, shellcheck
 
 permissions:
   contents: read
 
 on:
+  # TODO: Switch to pull_request_target for safety
   pull_request:
     branches:
       - main
     paths:
-      '**/Containerfile'
-      '**/*.md'
-      '**/*.sh'
+      - '**/Containerfile'
+      - '**/*.md'
+      - '**/*.sh'
   workflow_dispatch:
 
 jobs:
-  debug:
+  pre-commit-script:
     runs-on: ubuntu-latest
 
     steps:
       - name: Check-out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 #v4.2.2
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Run pre-commit.sh # TODO: switch to corresponding actions
+        run: $GITHUB_WORKSPACE/.github/pre-commit.sh

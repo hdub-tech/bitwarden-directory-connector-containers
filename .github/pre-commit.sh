@@ -9,11 +9,24 @@
 # * = Excludes deleted files
 # ============================================================== #
 
-echo "==> Executing pre-commit hook..."
+echo -n "==> Executing pre-commit hook "
+
+# TODO: Hack to run this script in GH Action until using corresponding actions
+COMPARE_TREE=HEAD
 PROJECT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )/../../" && pwd )
-FILES_CHANGED=$( git diff-index --cached --diff-filter=d --name-only HEAD )
-PODMAN_OR_DOCKER=$( which podman || which docker || (echo "Please install podman or docker!" && exit 1) )
+if [ -n "${GITHUB_ACTIONS}" ]; then
+  COMPARE_TREE="origin/main"
+  PROJECT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )
+fi
+echo "against files changed since ${COMPARE_TREE}..."
+
+GIT_ERROR_LOG=/tmp/git.err
+FILES_CHANGED=$( git diff-index --cached --diff-filter=d --name-only "${COMPARE_TREE}" 2>${GIT_ERROR_LOG} )
+[ -s "${GIT_ERROR_LOG}" ] && cat ${GIT_ERROR_LOG} && exit 1
+
 declare -a FAILED_TESTS
+PODMAN_OR_DOCKER=$( which podman || which docker )
+[ -z "${PODMAN_OR_DOCKER}" ] && echo "Please install podman or docker!" && exit 2
 
 # =============================================== #
 # Run markdownlint-cli2 if Markdown files changed #
@@ -22,7 +35,7 @@ MARKDOWNLINT_CLI2_REPO="docker.io/davidanson/markdownlint-cli2"
 MARKDOWNLINT_CLI2_VERSION="v0.16.0"
 MD_FILES_CHANGED=$( echo "$FILES_CHANGED" | awk '{if ($1 ~ /.*md.*/) {print "true"; exit}}' )
 if [ "$MD_FILES_CHANGED" == "true" ]; then
-  echo "==> Executing markdownlint-cli2 on changed **/*.md* files..."
+  echo "==> Executing markdownlint-cli2 on all **/*.md* files..."
   "$PODMAN_OR_DOCKER" run --rm -v "$PROJECT_DIR":/workdir "$MARKDOWNLINT_CLI2_REPO":"$MARKDOWNLINT_CLI2_VERSION" && echo "==> markdownlint-cli2 completed successfully." || FAILED_TESTS+=("markdownlint-cli")
 fi
 
