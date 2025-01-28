@@ -7,12 +7,12 @@ SCRIPT_DIR="$( cd "$( dirname "${0}" )" && pwd )"
 SCRIPT_NAME="$( basename "${0}" )"
 SUPPORTED_BWDC_SYNCS=( gsuite )
 SUPPORTED_SECRETS_MANAGERS=( podman env )
-DEFAULT_BWDC_VERSION="2025.1.0"
-BASE_VERSION="1.0.0-alpha"
-GSUITE_VERSION="1.0.0-alpha"
+# Source conf file with versions
+# shellcheck disable=SC1091
+. "${SCRIPT_DIR}/versions.conf"
+DEFAULT_BWDC_VERSION="${BWDC_VERSION}"
 
 # Configurable args
-BWDC_VERSION="${DEFAULT_BWDC_VERSION}"
 BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE=
 BASE_ONLY=
 SECRETS_MANAGER="env"
@@ -106,9 +106,9 @@ exportSecrets() {
 # Build common base image
 buildBase() {
   podman build ${NO_CACHE} \
-    --build-arg VERSION="${BASE_VERSION}" \
+    --build-arg BWDC_BASE_IMAGE_VERSION="${BWDC_BASE_IMAGE_VERSION}" \
     --build-arg BWDC_VERSION="${BWDC_VERSION}" \
-    -t hdub-tech/bwdc-base:"${BASE_VERSION}" \
+    -t hdub-tech/bwdc-base:"${BWDC_BASE_IMAGE_VERSION}" \
     -f Containerfile \
     || exit 9
 }
@@ -131,9 +131,9 @@ buildGsuite() {
       --build-arg-file="${conf}" \
       --secret=id=bw_clientid,env=BW_CLIENTID \
       --secret=id=bw_clientsecret,env=BW_CLIENTSECRET \
-      --build-arg BASE_VERSION="${BASE_VERSION}" \
-      --build-arg VERSION="${GSUITE_VERSION}" \
-      -t "hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-${conf_name}":"${GSUITE_VERSION}" \
+      --build-arg BWDC_BASE_IMAGE_VERSION="${BWDC_BASE_IMAGE_VERSION}" \
+      --build-arg BWDC_GSUITE_IMAGE_VERSION="${BWDC_GSUITE_IMAGE_VERSION}" \
+      -t "hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-${conf_name}":"${BWDC_GSUITE_IMAGE_VERSION}" \
       -f Containerfile \
       || exit 8
   done
@@ -160,18 +160,18 @@ usageRun() {
 	  non-interactively, mount the directory containing your data.json file
 	  ==> THIS WILL RESULT IN DATA.JSON BEING MODIFIED (bwdc behavior). <==
 
-	    podman run ${SECRETS[*]} --rm --volume /PATH/TO/YOUR/DATA-JSON-DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id localhost/hdub-tech/bwdc-base:${BASE_VERSION} [-c] [-t] [-s] [-h]
+	    podman run ${SECRETS[*]} --rm --volume /PATH/TO/YOUR/DATA-JSON-DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id localhost/hdub-tech/bwdc-base:${BWDC_BASE_IMAGE_VERSION} [-c] [-t] [-s] [-h]
 
 	----------------------------------------------------------------------------
 	  To run the generic base container using your own data.json file
 	  interactively, mount the directory containing your data.json file
 	  ==> THIS WILL RESULT IN DATA.JSON BEING MODIFIED IF YOU USE bwdc <==
 
-	    podman run ${SECRETS[*]} -it --rm --entrypoint bash --volume /PATH/TO/YOUR/DATA-JSON-DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id localhost/hdub-tech/bwdc-base:${BASE_VERSION}
+	    podman run ${SECRETS[*]} -it --rm --entrypoint bash --volume /PATH/TO/YOUR/DATA-JSON-DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id localhost/hdub-tech/bwdc-base:${BWDC_BASE_IMAGE_VERSION}
 	BASE
 
   if [ -z "${BASE_ONLY}" ]; then
-    TYPE_VERSION="${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE@U}_VERSION"
+    TYPE_VERSION="BWDC_${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE@U}_IMAGE_VERSION"
     cat <<-TYPE
 
 	----------------------------------------------------------------------------

@@ -1,10 +1,10 @@
 # USAGE:
 #  BUILD:
 #    Defaults:
-#    podman build -t hdub-tech/bwdc-base:VERSION_OF_THIS_IMAGE -f Containerfile
+#    podman build --build-arg-file versions.conf -t hdub-tech/bwdc-base:VERSION_OF_THIS_IMAGE -f Containerfile
 #
 #    Overrides (defaults displayed):
-#    podman build --build-arg VERSION=dev --build-arg BWDC_VERSION=2025.1.0 -t hdub-tech/bwdc-base:dev -f Containerfile
+#    podman build --build-arg BWDC_BASE_IMAGE_VERSION=dev --build-arg BWDC_VERSION=2025.1.0 -t hdub-tech/bwdc-base:dev -f Containerfile
 #
 #  RUN:
 #    Non-interactive:
@@ -17,10 +17,10 @@
 #
 FROM docker.io/debian:12-slim
 
-ARG VERSION="dev"
+ARG BWDC_BASE_IMAGE_VERSION="dev"
 LABEL org.opencontainers.image.authors="hdub-tech@github"
 LABEL org.opencontainers.image.source="https://github.com/hdub-tech/bitwarden-directory-connector-containers/blob/main/Containerfile"
-LABEL org.opencontainers.image.version=$VERSION
+LABEL org.opencontainers.image.version=$BWDC_BASE_IMAGE_VERSION
 
 # Install dependencies
 # hadolint ignore=DL3008
@@ -38,7 +38,7 @@ RUN useradd --home-dir $WORKING_DIR --create-home --shell /bin/bash --uid $BWUID
 WORKDIR $WORKING_DIR
 
 # Install Bitwarden Directory Connector - needs root for /usr/local/bin
-ARG BWDC_VERSION=2025.1.0
+ARG BWDC_VERSION
 RUN wget --quiet https://github.com/bitwarden/directory-connector/releases/download/v$BWDC_VERSION/bwdc-linux-$BWDC_VERSION.zip \
     && unzip $WORKING_DIR/bwdc-linux-$BWDC_VERSION.zip -d /usr/local/bin \
     && rm $WORKING_DIR/bwdc-linux-$BWDC_VERSION.zip

@@ -4,7 +4,7 @@
 #     podman build --build-arg-file=CONFNAME.conf --secret=id=bw_clientid,env=BW_CLIENTID --secret=id=bw_clientsecret,env=BW_CLIENTSECRET -t hdub-tech/bwdc-gsuite-CONFNAME:VERSION_OF_THIS_IMAGE -f Containerfile
 #
 #     Overrides (defaults displayed):
-#     podman build --build-arg-file=CONFNAME.conf --build-arg BASE_VERSION=dev --build-arg VERSION=dev --secret=id=bw_clientid,env=BW_CLIENTID --secret=id=bw_clientsecret,env=BW_CLIENTSECRET -t hdub-tech/bwdc-gsuite-CONFNAME:VERSION_OF_THIS_IMAGE -f Containerfile
+#     podman build --build-arg-file=CONFNAME.conf --build-arg BWDC_BASE_IMAGE_VERSION=dev --build-arg BWDC_GSUITE_IMAGE_VERSION=dev --secret=id=bw_clientid,env=BW_CLIENTID --secret=id=bw_clientsecret,env=BW_CLIENTSECRET -t hdub-tech/bwdc-gsuite-CONFNAME:VERSION_OF_THIS_IMAGE -f Containerfile
 #
 #   RUN:
 #     Non-interactively:
@@ -15,13 +15,13 @@
 #    bitwarden@deadbeef1234:~$ ./entrypoint -h  #List help for container script
 #    bitwarden@deadbeef1234:~$ bwdc help        #Use raw bwdc cli
 #
-ARG BASE_VERSION="dev"
-FROM hdub-tech/bwdc-base:$BASE_VERSION
+ARG BWDC_BASE_IMAGE_VERSION="dev"
+FROM hdub-tech/bwdc-base:$BWDC_BASE_IMAGE_VERSION
 
-ARG VERSION="dev"
+ARG BWDC_GSUITE_IMAGE_VERSION="dev"
 LABEL org.opencontainers.image.authors="hdub-tech@github"
 LABEL org.opencontainers.image.source="https://github.com/hdub-tech/bitwarden-directory-connector-containers/blob/main/gsuite/Containerfile"
-LABEL org.opencontainers.image.version=$VERSION
+LABEL org.opencontainers.image.version=$BWDC_GSUITE_IMAGE_VERSION
 
 # User
 ARG BWUSER=bitwarden

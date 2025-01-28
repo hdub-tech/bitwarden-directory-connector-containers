@@ -15,7 +15,8 @@ PROJECT_CONFS_DIR="${DEFAULT_PROJECT_CONFS_DIR}"
 MODE=
 SKIP_PREREQS=
 # TODO: Support specifying bwdc version
-BWDC_VERSION="2025.1.0"
+# shellcheck disable=SC1091
+. "${SCRIPT_DIR}"/versions.conf
 # TODO: SECRETS_MANAGER flag
 SECRETS_MANAGER="env"
 
@@ -26,6 +27,7 @@ usage() {
     of one stop shop for doing all of your bwdc syncs (or even just test).
     This github project should be a submodule of your project of confs.
     This script is intended to be run in a Continuous Integration system.
+    Currently uses bwdc version: ${BWDC_VERSION}
 >>> (!) WARNING: THIS SCRIPT WILL INSTALL REQUIRED PACKAGES UNLESS RUN WITH -s (!) <<<
 
   USAGE:
