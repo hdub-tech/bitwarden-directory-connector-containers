@@ -1,3 +1,20 @@
+# USAGE:
+#   BUILD:
+#     Defaults:
+#     podman build --build-arg-file=CONFNAME.conf --secret=id=bw_clientid,env=BW_CLIENTID --secret=id=bw_clientsecret,env=BW_CLIENTSECRET -t hdub-tech/bwdc-gsuite-CONFNAME:VERSION_OF_THIS_IMAGE -f Containerfile
+#
+#     Overrides (defaults displayed):
+#     podman build --build-arg-file=CONFNAME.conf --build-arg BASE_VERSION=dev --build-arg VERSION=dev --secret=id=bw_clientid,env=BW_CLIENTID --secret=id=bw_clientsecret,env=BW_CLIENTSECRET -t hdub-tech/bwdc-gsuite-CONFNAME:VERSION_OF_THIS_IMAGE -f Containerfile
+#
+#   RUN:
+#     Non-interactively:
+#     podman run --env-file $BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/env.vars --rm hdub-tech/bwdc-gsuite:VERSION_OF_THIS_IMAGE [-h] [-c] [-t] [-s]
+#
+#     Interactively:
+#     podman run --env-file $BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/env.vars --rm -it --entrypoint bash hdub-tech/bwdc-gsuite:VERSION_OF_THIS_IMAGE
+#    bitwarden@deadbeef1234:~$ ./entrypoint -h  #List help for container script
+#    bitwarden@deadbeef1234:~$ bwdc help        #Use raw bwdc cli
+#
 ARG BASE_VERSION="dev"
 FROM hdub-tech/bwdc-base:$BASE_VERSION
 

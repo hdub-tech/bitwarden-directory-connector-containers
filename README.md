@@ -131,6 +131,10 @@ podman run ${SECRETS[*]} localhost/hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIREC
 podman run ${SECRETS[*]} -it --entrypoint bash localhost/hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${VERSION}
 ```
 
+```bash
+podman run --env-file $BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/env.vars --rm --volume /PATH/TO/YOUR/DATA_JSON_DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id ghrc.io/hdub-tech/bwdc-base:VERSION
+```
+
 # Contributing
 
 1. Link the pre-commit hook so that it will execute before commits.

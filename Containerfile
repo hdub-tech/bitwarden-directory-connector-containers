@@ -1,3 +1,20 @@
+# USAGE:
+#  BUILD:
+#    Defaults:
+#    podman build -t hdub-tech/bwdc-base:VERSION_OF_THIS_IMAGE -f Containerfile
+#
+#    Overrides (defaults displayed):
+#    podman build --build-arg VERSION=dev --build-arg BWDC_VERSION=2024.10.0 -t hdub-tech/bwdc-base:dev -f Containerfile
+#
+#  RUN:
+#    Non-interactive:
+#    podman run --env-file $BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/env.vars --rm --volume /PATH/TO/DATA_JSON_DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id hdub-tech/bwdc-base:VERSION_OF_THIS_IMAGE [-h] [-c] [-t] [-s]
+#
+#    Interactive:
+#    podman run --env-file $BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/env.vars -it --entrypoint bash --rm --volume /PATH/TO/DATA_JSON_DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id hdub-tech/bwdc-base:VERSION_OF_THIS_IMAGE
+#    bitwarden@deadbeef1234:~$ ./entrypoint -h  #List help for container script
+#    bitwarden@deadbeef1234:~$ bwdc help        #Use raw bwdc cli with your mounted data.json
+#
 FROM docker.io/debian:12-slim
 
 ARG VERSION="dev"
