@@ -9,6 +9,16 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_NAME: bwdc-base
+  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+  REGISTRY_USER: ${{ github.actor }}
+  REGISTRY_PASSWORD: ${{ github.token }}
+
 jobs:
   build-push-bwdc-base:
     runs-on: ubuntu-latest
@@ -21,13 +31,20 @@ jobs:
         run: grep "^BWDC_BASE_IMAGE_VERSION=" "$GITHUB_WORKSPACE"/versions.conf >> "$GITHUB_ENV"
 
       - name: Build image with buildah
+        id: build_base_image
         uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056  #v2.13
         with:
           # buildah-build always adds github.workspace, even if you already did it for them
           containerfiles: Containerfile
-          image: ghcr.io/hdub-tech/bwdc-base
+          image: ${{ env.IMAGE_NAME }}
           tags: ${{ env.BWDC_BASE_IMAGE_VERSION }} ${{ github.sha }}
           extra-args: --build-arg-file versions.conf
 
-      - name: DEDUHGING
-        run: buildah images --all
+      - name: Push image to ghcr
+        uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c  #v2.8
+        with:
+          image: ${{ steps.build_base_image.outputs.image }}
+          tags: ${{ steps.build_base_image.outputs.tags }}
+          registry: ${{ env.IMAGE_REGISTRY }}
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
