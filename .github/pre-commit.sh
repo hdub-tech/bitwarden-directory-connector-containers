@@ -3,7 +3,7 @@
 # Pre-commit hook should be symlinked to $PROJECT_DIR/.git/hooks!
 #
 # 1. Runs markdownlint-cli2 if *.md files were changed*
-# 2. Runs hadolint if Dockerfile files were changed*
+# 2. Runs hadolint if Containerfile files were changed*
 # 3. Runs shellcheck if *.sh files were changed*
 #
 # * = Excludes deleted files
@@ -39,15 +39,15 @@ if [ "$MD_FILES_CHANGED" == "true" ]; then
   "$PODMAN_OR_DOCKER" run --rm -v "$PROJECT_DIR":/workdir "$MARKDOWNLINT_CLI2_REPO":"$MARKDOWNLINT_CLI2_VERSION" && echo "==> markdownlint-cli2 completed successfully." || FAILED_TESTS+=("markdownlint-cli")
 fi
 
-# =================================== #
-# Run hadolint on changed Dockerfiles #
-# =================================== #
+# ====================================== #
+# Run hadolint on changed Containerfiles #
+# ====================================== #
 HADOLINT_REPO="docker.io/hadolint/hadolint"
 HADOLINT_VERSION="v2.12.0"
-DOCKER_FILES_CHANGED=$( echo "$FILES_CHANGED" | awk '{for( i=1; i<=NF; i++ ) {if ($i ~ /Dockerfile/) {print $i}}}' )
-for dockerfile in $DOCKER_FILES_CHANGED; do
-  echo "==> Executing hadolint on changed $dockerfile..."
-  "$PODMAN_OR_DOCKER" run --rm -i "$HADOLINT_REPO":"$HADOLINT_VERSION" < "$dockerfile" && echo "==> hadolint completed successfully." || FAILED_TESTS+=("hadolint")
+CONTAINER_FILES_CHANGED=$( echo "$FILES_CHANGED" | awk '{for( i=1; i<=NF; i++ ) {if ($i ~ /Containerfile/) {print $i}}}' )
+for containerfile in $CONTAINER_FILES_CHANGED; do
+  echo "==> Executing hadolint on changed $containerfile..."
+  "$PODMAN_OR_DOCKER" run --rm -i "$HADOLINT_REPO":"$HADOLINT_VERSION" < "$containerfile" && echo "==> hadolint completed successfully." || FAILED_TESTS+=("hadolint")
 done
 
 # ============================== #
