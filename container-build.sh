@@ -7,7 +7,7 @@ SCRIPT_DIR="$( cd "$( dirname "${0}" )" && pwd )"
 SCRIPT_NAME="$( basename "${0}" )"
 SUPPORTED_BWDC_SYNCS=( gsuite )
 SUPPORTED_SECRETS_MANAGERS=( podman env )
-DEFAULT_BWDC_VERSION=2024.10.0
+DEFAULT_BWDC_VERSION="2025.1.0"
 BASE_VERSION="1.0.0-alpha"
 GSUITE_VERSION="1.0.0-alpha"
 
@@ -31,9 +31,9 @@ usage() {
        method, where BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE is one of:
        ${SUPPORTED_BWDC_SYNCS[*]}
      - Use -o for the "bring your own data.json" method
-   - SECRETS_MANAGER is one of: ${SUPPORTED_SECRETS_MANAGERS[*]}
+   - SECRETS_MANAGER is one of: ${SUPPORTED_SECRETS_MANAGERS[*]} (Not needed with -o)
      Note: "env" (default) indicates that the secrets are already exported to the environment.
-   - BWDC_VERSION (default=${DEFAULT_BWDC_VERSION}) is X.Y.Z format and one of: https://github.com/bitwarden/directory-connector/releases
+   - BWDC_VERSION (default=${DEFAULT_BWDC_VERSION}) is X.Y.Z format (no leading v!) and one of: https://github.com/bitwarden/directory-connector/releases
    - Use "-n" to build all container images without cache (--no-cache)
    - Use "-r" to rebuild the final run stage of the type specific container (allows you to test login)
 

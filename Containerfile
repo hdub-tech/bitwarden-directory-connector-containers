@@ -4,7 +4,7 @@
 #    podman build -t hdub-tech/bwdc-base:VERSION_OF_THIS_IMAGE -f Containerfile
 #
 #    Overrides (defaults displayed):
-#    podman build --build-arg VERSION=dev --build-arg BWDC_VERSION=2024.10.0 -t hdub-tech/bwdc-base:dev -f Containerfile
+#    podman build --build-arg VERSION=dev --build-arg BWDC_VERSION=2025.1.0 -t hdub-tech/bwdc-base:dev -f Containerfile
 #
 #  RUN:
 #    Non-interactive:
@@ -38,7 +38,7 @@ RUN useradd --home-dir $WORKING_DIR --create-home --shell /bin/bash --uid $BWUID
 WORKDIR $WORKING_DIR
 
 # Install Bitwarden Directory Connector - needs root for /usr/local/bin
-ARG BWDC_VERSION=2024.10.0
+ARG BWDC_VERSION=2025.1.0
 RUN wget --quiet https://github.com/bitwarden/directory-connector/releases/download/v$BWDC_VERSION/bwdc-linux-$BWDC_VERSION.zip \
     && unzip $WORKING_DIR/bwdc-linux-$BWDC_VERSION.zip -d /usr/local/bin \
     && rm $WORKING_DIR/bwdc-linux-$BWDC_VERSION.zip
