@@ -10,12 +10,10 @@ SUPPORTED_SECRETS_MANAGERS=( podman env )
 # Source conf file with versions
 # shellcheck disable=SC1091
 . "${SCRIPT_DIR}/versions.conf"
-DEFAULT_BWDC_VERSION="${BWDC_VERSION}"
 DEFAULT_IMAGE_NAMESPACE="hdub-tech"
 
 # Configurable args
 BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE=
-BASE_ONLY=
 SECRETS_MANAGER="env"
 IMAGE_NAMESPACE="${DEFAULT_IMAGE_NAMESPACE}"
 NO_CACHE=
@@ -26,19 +24,14 @@ USAGE_ERROR=255
 usage() {
   cat <<EOM
   USAGE:
-    ${SCRIPT_NAME} -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE|-o [-s SECRETS_MANAGER] [-b BWDC_VERSION] [-i IMAGE_NAMESPACE] [-n] [-r]
+    ${SCRIPT_NAME} -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE [-s SECRETS_MANAGER] [-i IMAGE_NAMESPACE] [-n] [-r]
 
-   - At least one method flag is required:
-     - Use -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE for the "config file"
-       method, where BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE is one of:
-       ${SUPPORTED_BWDC_SYNCS[*]}
-     - Use -o for the "bring your own data.json" method
-   - SECRETS_MANAGER is one of: ${SUPPORTED_SECRETS_MANAGERS[*]} (Not needed with -o)
-     Note: "env" (default) indicates that the secrets are already exported to the environment.
-   - BWDC_VERSION (default=${DEFAULT_BWDC_VERSION}) is X.Y.Z format (no leading v!) and one of: https://github.com/bitwarden/directory-connector/releases
-   - IMAGE_NAMESPACE (default=${DEFAULT_IMAGE_NAMESPACE}) - For type specific images only,
-     you can specify the namespace portion of the tag (in case you want to push
-     these to your own container registry).
+   - BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE is one of: [${SUPPORTED_BWDC_SYNCS[*]}]
+   - SECRETS_MANAGER is one of: [${SUPPORTED_SECRETS_MANAGERS[*]}]. Note: "env"
+     (default) indicates that the secrets are already exported to the environment.
+   - IMAGE_NAMESPACE (default=${DEFAULT_IMAGE_NAMESPACE}). You can specify the
+     namespace portion of the tag (in case you want to push these to your own
+     container registry).
    - Use "-n" to build all container images without cache (--no-cache)
    - Use "-r" to rebuild the final run stage of the type specific container (allows you to test login)
 
@@ -108,16 +101,6 @@ exportSecrets() {
   esac
 }
 
-# Build common base image
-buildBase() {
-  podman build ${NO_CACHE} \
-    --build-arg BWDC_BASE_IMAGE_VERSION="${BWDC_BASE_IMAGE_VERSION}" \
-    --build-arg BWDC_VERSION="${BWDC_VERSION}" \
-    -t hdub-tech/bwdc-base:"${BWDC_BASE_IMAGE_VERSION}" \
-    -f Containerfile \
-    || exit 9
-}
-
 # Build gsuite sync image(s)
 buildGsuite() {
   exportSecrets bw_clientid bw_clientsecret
@@ -146,52 +129,24 @@ buildGsuite() {
 
 # Convenient blurb to let you know how to run the container
 usageRun() {
-  declare -a SECRETS
-  case "${SECRETS_MANAGER}" in
-    "env" )
-      [ -n "${BASE_ONLY}" ] && BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE="\$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE"
-      SECRETS+=("--env-file ${SCRIPT_DIR}/${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}/env.vars")
-      ;;
-    "podman" )
-      SECRETS+=("--secret=bw_clientid,type=env,target=BW_CLIENTID")
-      SECRETS+=("--secret=bw_clientsecret,type=env,target=BW_CLIENTSECRET")
-      [[ "gsuite" == "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" ]] && SECRETS+=("--secret=bw_gsuitekey,type=env,target=BW_GSUITEKEY")
-      ;;
-  esac
+  . "${SCRIPT_DIR}"/functions.sh
+  SECRETS="$( buildPodmanRunSecretsOptions )"
 
-  cat <<-BASE
+  TYPE_VERSION="BWDC_${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE@U}_IMAGE_VERSION"
+  cat <<-EOM
+
 	===========================================================================
-	  To run the generic base container using your own data.json file
-	  non-interactively, mount the directory containing your data.json file
-	  ==> THIS WILL RESULT IN DATA.JSON BEING MODIFIED (bwdc behavior). <==
-
-	    podman run ${SECRETS[*]} --rm --volume /PATH/TO/YOUR/DATA-JSON-DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id ghcr.io/hdub-tech/bwdc-base:${BWDC_BASE_IMAGE_VERSION} [-c] [-t] [-s] [-h]
-
-	----------------------------------------------------------------------------
-	  To run the generic base container using your own data.json file
-	  interactively, mount the directory containing your data.json file
-	  ==> THIS WILL RESULT IN DATA.JSON BEING MODIFIED IF YOU USE bwdc <==
-
-	    podman run ${SECRETS[*]} -it --rm --entrypoint bash --volume /PATH/TO/YOUR/DATA-JSON-DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id ghcr.io/hdub-tech/bwdc-base:${BWDC_BASE_IMAGE_VERSION}
-	BASE
-
-  if [ -z "${BASE_ONLY}" ]; then
-    TYPE_VERSION="BWDC_${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE@U}_IMAGE_VERSION"
-    cat <<-TYPE
-
-	----------------------------------------------------------------------------
 	  To run the type-conf specific container non-interactively (update CONFNAME):
 
-	    podman run ${SECRETS[*]} --rm ${IMAGE_NAMESPACE}/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${!TYPE_VERSION} [-c] [-t] [-s] [-h]
+	    podman run ${SECRETS} --rm ${IMAGE_NAMESPACE}/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${!TYPE_VERSION} [-c] [-t] [-s] [-h]
 
 	----------------------------------------------------------------------------
 	  To run the type-conf specific container interactively (update CONFNAME):
 
-	    podman run ${SECRETS[*]} -it --entrypoint bash --rm ${IMAGE_NAMESPACE}/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${!TYPE_VERSION}
+	    podman run ${SECRETS} -it --entrypoint bash --rm ${IMAGE_NAMESPACE}/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${!TYPE_VERSION}
 
-	TYPE
-  fi
-  echo "==========================================================================="
+	===========================================================================
+	EOM
 }
 
 # Simplistic check for simplistic use case
@@ -205,11 +160,12 @@ arrayContains() {
   [[ " ${array[*]} " =~ [[:space:]]${search_item}[[:space:]] ]]
 }
 
-while getopts "ht:os:b:i:nr" opt; do
+while getopts "ht:s:i:nr" opt; do
   case "${opt}" in
     "h" )
       # h = help
-      usage "${USAGE_HELP}" ;;
+      usage "${USAGE_HELP}"
+      ;;
     "t" )
       # t = type
       if arrayContains "${SUPPORTED_BWDC_SYNCS[*]}" "${OPTARG}" ; then
@@ -218,9 +174,6 @@ while getopts "ht:os:b:i:nr" opt; do
         usage 1
       fi
       ;;
-    "o" )
-      # = only build base
-      BASE_ONLY=true ;;
     "s" )
       # s = secret manager
       if arrayContains "${SUPPORTED_SECRETS_MANAGERS[*]}" "${OPTARG}" ; then
@@ -231,14 +184,11 @@ while getopts "ht:os:b:i:nr" opt; do
       ;;
     "n" )
       # n = no-cache
-      NO_CACHE="--no-cache" ;;
+      NO_CACHE="--no-cache"
+      ;;
     "r" )
       # r = rebuild run stage
       OPTIONAL_REBUILD_BWDC_LOGIN_STAGE="--build-arg OPTIONAL_REBUILD_BWDC_LOGIN_STAGE=\"$( date +%s )\""
-      ;;
-    "b" )
-      # b = BWDC version
-      BWDC_VERSION="${OPTARG}"
       ;;
     "i" )
       # i = Image Namespace for tag
@@ -248,20 +198,16 @@ while getopts "ht:os:b:i:nr" opt; do
   esac
 done
 
-if [ -z "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" ] && [ -z "${BASE_ONLY}" ]; then
+if [ -z "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" ]; then
   usage 3
 else
   if [ -z "${SECRETS_MANAGER}" ]; then
     usage 10
   else
-    if [ -n "${BASE_ONLY}" ]; then
-      buildBase
-    else
-      case "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" in
-        "gsuite" ) buildGsuite ;;
-        * ) usage "${USAGE_ERROR}" ;;
-      esac
-    fi
+    case "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" in
+      "gsuite" ) buildGsuite ;;
+      * ) usage "${USAGE_ERROR}" ;;
+    esac
 
     usageRun
   fi
