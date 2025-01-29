@@ -1,12 +1,8 @@
 name: Build/Push
-description: Build and push container images
+description: Build bwdc-base image and push to ghcr.io
 
 on:
   release:
-  # TODO: Remove or switch to pull_request_target for safety
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
