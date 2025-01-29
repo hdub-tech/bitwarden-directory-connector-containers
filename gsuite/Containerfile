@@ -16,7 +16,7 @@
 #    bitwarden@deadbeef1234:~$ bwdc help        #Use raw bwdc cli
 #
 ARG BWDC_BASE_IMAGE_VERSION="dev"
-FROM hdub-tech/bwdc-base:$BWDC_BASE_IMAGE_VERSION
+FROM ghcr.io/hdub-tech/bwdc-base:$BWDC_BASE_IMAGE_VERSION
 
 ARG BWDC_GSUITE_IMAGE_VERSION="dev"
 LABEL org.opencontainers.image.authors="hdub-tech@github"
