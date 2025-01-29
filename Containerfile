@@ -18,8 +18,10 @@
 FROM docker.io/debian:12-slim
 
 ARG BWDC_BASE_IMAGE_VERSION="dev"
+LABEL org.opencontainers.image.title="bwdc-base"
 LABEL org.opencontainers.image.authors="hdub-tech@github"
 LABEL org.opencontainers.image.source="https://github.com/hdub-tech/bitwarden-directory-connector-containers/blob/main/Containerfile"
+LABEL org.opencontainers.image.licenses="GPL-3.0"
 LABEL org.opencontainers.image.version=$BWDC_BASE_IMAGE_VERSION
 
 # Install dependencies
@@ -42,6 +44,7 @@ ARG BWDC_VERSION
 RUN wget --quiet https://github.com/bitwarden/directory-connector/releases/download/v$BWDC_VERSION/bwdc-linux-$BWDC_VERSION.zip \
     && unzip $WORKING_DIR/bwdc-linux-$BWDC_VERSION.zip -d /usr/local/bin \
     && rm $WORKING_DIR/bwdc-linux-$BWDC_VERSION.zip
+LABEL org.opencontainers.image.description="Contains bwdc (Version: ${BWDC_VERSION}), ${BWUSER} user (id=${BWUID}, home=${WORKING_DIR}) and an entrypoint.sh script for config, test and sync"
 
 USER $BWUSER
 ENV BITWARDENCLI_CONNECTOR_PLAINTEXT_SECRETS=true

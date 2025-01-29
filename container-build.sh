@@ -137,6 +137,7 @@ buildGsuite() {
       --secret=id=bw_clientsecret,env=BW_CLIENTSECRET \
       --build-arg BWDC_BASE_IMAGE_VERSION="${BWDC_BASE_IMAGE_VERSION}" \
       --build-arg BWDC_GSUITE_IMAGE_VERSION="${BWDC_GSUITE_IMAGE_VERSION}" \
+      --build-arg CONFNAME="${conf_name}" \
       -t "${IMAGE_NAMESPACE}/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-${conf_name}":"${BWDC_GSUITE_IMAGE_VERSION}" \
       -f Containerfile \
       || exit 8

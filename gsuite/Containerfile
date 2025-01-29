@@ -19,16 +19,19 @@ ARG BWDC_BASE_IMAGE_VERSION="dev"
 FROM ghcr.io/hdub-tech/bwdc-base:$BWDC_BASE_IMAGE_VERSION
 
 ARG BWDC_GSUITE_IMAGE_VERSION="dev"
+ENV BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE=gsuite
+ARG CONFNAME
+LABEL org.opencontainers.image.title="bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-${CONFNAME}"
+LABEL org.opencontainers.image.description="Image built off bwdc-base with a data.json specific to ${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}/${CONFNAME}.conf"
 LABEL org.opencontainers.image.authors="hdub-tech@github"
 LABEL org.opencontainers.image.source="https://github.com/hdub-tech/bitwarden-directory-connector-containers/blob/main/gsuite/Containerfile"
+LABEL org.opencontainers.image.licenses="GPL-3.0"
 LABEL org.opencontainers.image.version=$BWDC_GSUITE_IMAGE_VERSION
 
 # User
 ARG BWUSER=bitwarden
 ARG BWUID=1000
 USER $BWUSER
-
-ENV BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE=gsuite
 
 # Configurable arguments (Use $REPO/$TYPE/argfile.conf for overrides)
 ARG GOOGLE_DOMAIN
