@@ -1,0 +1,19 @@
+name: Build
+description: Build bwdc-base image
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build-bwdc-base:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check-out repository under $GITHUB_WORKSPACE
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  #v4.2.2
