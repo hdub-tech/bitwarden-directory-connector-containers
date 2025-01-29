@@ -11,11 +11,13 @@ SUPPORTED_SECRETS_MANAGERS=( podman env )
 # shellcheck disable=SC1091
 . "${SCRIPT_DIR}/versions.conf"
 DEFAULT_BWDC_VERSION="${BWDC_VERSION}"
+DEFAULT_IMAGE_NAMESPACE="hdub-tech"
 
 # Configurable args
 BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE=
 BASE_ONLY=
 SECRETS_MANAGER="env"
+IMAGE_NAMESPACE="${DEFAULT_IMAGE_NAMESPACE}"
 NO_CACHE=
 OPTIONAL_REBUILD_BWDC_LOGIN_STAGE=
 
@@ -24,7 +26,7 @@ USAGE_ERROR=255
 usage() {
   cat <<EOM
   USAGE:
-    ${SCRIPT_NAME} -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE|-o [-s SECRETS_MANAGER] [-b BWDC_VERSION] [-n] [-r]
+    ${SCRIPT_NAME} -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE|-o [-s SECRETS_MANAGER] [-b BWDC_VERSION] [-i IMAGE_NAMESPACE] [-n] [-r]
 
    - At least one method flag is required:
      - Use -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE for the "config file"
@@ -34,6 +36,9 @@ usage() {
    - SECRETS_MANAGER is one of: ${SUPPORTED_SECRETS_MANAGERS[*]} (Not needed with -o)
      Note: "env" (default) indicates that the secrets are already exported to the environment.
    - BWDC_VERSION (default=${DEFAULT_BWDC_VERSION}) is X.Y.Z format (no leading v!) and one of: https://github.com/bitwarden/directory-connector/releases
+   - IMAGE_NAMESPACE (default=${DEFAULT_IMAGE_NAMESPACE}) - For type specific images only,
+     you can specify the namespace portion of the tag (in case you want to push
+     these to your own container registry).
    - Use "-n" to build all container images without cache (--no-cache)
    - Use "-r" to rebuild the final run stage of the type specific container (allows you to test login)
 
@@ -132,7 +137,7 @@ buildGsuite() {
       --secret=id=bw_clientsecret,env=BW_CLIENTSECRET \
       --build-arg BWDC_BASE_IMAGE_VERSION="${BWDC_BASE_IMAGE_VERSION}" \
       --build-arg BWDC_GSUITE_IMAGE_VERSION="${BWDC_GSUITE_IMAGE_VERSION}" \
-      -t "hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-${conf_name}":"${BWDC_GSUITE_IMAGE_VERSION}" \
+      -t "${IMAGE_NAMESPACE}/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-${conf_name}":"${BWDC_GSUITE_IMAGE_VERSION}" \
       -f Containerfile \
       || exit 8
   done
@@ -176,12 +181,12 @@ usageRun() {
 	----------------------------------------------------------------------------
 	  To run the type-conf specific container non-interactively (update CONFNAME):
 
-	    podman run ${SECRETS[*]} --rm localhost/hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${!TYPE_VERSION} [-c] [-t] [-s] [-h]
+	    podman run ${SECRETS[*]} --rm ${IMAGE_NAMESPACE}/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${!TYPE_VERSION} [-c] [-t] [-s] [-h]
 
 	----------------------------------------------------------------------------
 	  To run the type-conf specific container interactively (update CONFNAME):
 
-	    podman run ${SECRETS[*]} -it --entrypoint bash --rm localhost/hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${!TYPE_VERSION}
+	    podman run ${SECRETS[*]} -it --entrypoint bash --rm ${IMAGE_NAMESPACE}/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${!TYPE_VERSION}
 
 	TYPE
   fi
@@ -199,7 +204,7 @@ arrayContains() {
   [[ " ${array[*]} " =~ [[:space:]]${search_item}[[:space:]] ]]
 }
 
-while getopts "ht:os:b:nr" opt; do
+while getopts "ht:os:b:i:nr" opt; do
   case "${opt}" in
     "h" )
       # h = help
@@ -233,6 +238,10 @@ while getopts "ht:os:b:nr" opt; do
     "b" )
       # b = BWDC version
       BWDC_VERSION="${OPTARG}"
+      ;;
+    "i" )
+      # i = Image Namespace for tag
+      IMAGE_NAMESPACE="${OPTARG}"
       ;;
     * ) usage "${USAGE_ERROR}" ;;
   esac
