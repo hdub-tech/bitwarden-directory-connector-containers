@@ -11,6 +11,7 @@ SUPPORTED_BWDC_SYNCS=( gsuite )
 SUPPORTED_SECRETS_MANAGERS=( podman env )
 
 # Configurable in conf file
+BWDC_VERSION=
 IMAGE_NAMESPACE=
 # Source conf file with versions
 # shellcheck disable=SC1091
@@ -123,8 +124,7 @@ buildGsuite() {
       --build-arg-file="${conf}" \
       --secret=id=bw_clientid,env=BW_CLIENTID \
       --secret=id=bw_clientsecret,env=BW_CLIENTSECRET \
-      --build-arg BWDC_BASE_IMAGE_VERSION="${BWDC_BASE_IMAGE_VERSION}" \
-      --build-arg BWDC_GSUITE_IMAGE_VERSION="${BWDC_GSUITE_IMAGE_VERSION}" \
+      --build-arg BWDC_VERSION="${BWDC_VERSION}" \
       --build-arg CONFNAME="${conf_name}" \
       -t "${IMAGE_NAMESPACE}/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-${conf_name}":"${BWDC_GSUITE_IMAGE_VERSION}" \
       -f Containerfile \

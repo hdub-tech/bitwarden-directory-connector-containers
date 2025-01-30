@@ -24,13 +24,8 @@ jobs:
       - name: Check-out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  #v4.2.2
 
-      - name: Set bwdc-base version number from versions file with "rc", if a PR
-        if: ${{ github.event_name == 'pull_request_target' }}
-        run: echo "$( grep '^BWDC_BASE_IMAGE_VERSION=' $GITHUB_WORKSPACE/versions.conf )-rc" >> "$GITHUB_ENV"
-
-      - name: Set bwdc-base version number strictly from versions file, if not a PR
-        if: ${{ github.event_name != 'pull_request_target' }}
-        run: grep "^BWDC_BASE_IMAGE_VERSION=" "$GITHUB_WORKSPACE"/versions.conf >> "$GITHUB_ENV"
+      - name: Set bwdc-base version number based on the version of bwdc
+        run: grep "^BWDC_VERSION=" "$GITHUB_WORKSPACE"/defaults.conf >> "$GITHUB_ENV"
 
       - name: Build image with buildah
         id: build_base_image
@@ -39,8 +34,5 @@ jobs:
           # buildah-build always adds github.workspace, even if you already did it for them
           containerfiles: Containerfile
           image: ${{ env.IMAGE_NAME }}
-          tags: ${{ env.BWDC_BASE_IMAGE_VERSION }} ${{ github.sha }}
-          # build_args: In case we are overriding for a release candidate
-          build_args: |
-            BWDC_BASE_IMAGE_VERSION=${{ env.BWDC_BASE_IMAGE_VERSION }}
-          extra-args: --build-arg-file versions.conf
+          tags: ${{ env.BWDC_VERSION }} ${{ github.sha }}
+          extra-args: --build-arg-file defaults.conf

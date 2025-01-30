@@ -36,9 +36,8 @@ EOM
 # Build common base image
 buildBase() {
   podman build ${NO_CACHE} \
-    --build-arg BWDC_BASE_IMAGE_VERSION="${BWDC_BASE_IMAGE_VERSION}" \
     --build-arg BWDC_VERSION="${BWDC_VERSION}" \
-    -t "${IMAGE_NAMESPACE}"/bwdc-base:"${BWDC_BASE_IMAGE_VERSION}" \
+    -t "${IMAGE_NAMESPACE}"/bwdc-base:"${BWDC_VERSION}" \
     -f Containerfile \
     || exit 1
 }
@@ -59,20 +58,20 @@ usageRun() {
 	  ==> THIS WILL RESULT IN DATA.JSON BEING MODIFIED (bwdc behavior). <==
 
 	  Published version:
-	    podman run ${SECRETS} --rm --volume /PATH/TO/YOUR/DATA-JSON-DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id ghcr.io/hdub-tech/bwdc-base:${BWDC_BASE_IMAGE_VERSION} [-c] [-t] [-s] [-h]
+	    podman run ${SECRETS} --rm --volume /PATH/TO/YOUR/DATA-JSON-DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id ghcr.io/hdub-tech/bwdc-base:${BWDC_VERSION} [-c] [-t] [-s] [-h]
 
 	  Local version:
-	    podman run ${SECRETS} --rm --volume /PATH/TO/YOUR/DATA-JSON-DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id ${IMAGE_NAMESPACE}/bwdc-base:${BWDC_BASE_IMAGE_VERSION} [-c] [-t] [-s] [-h]
+	    podman run ${SECRETS} --rm --volume /PATH/TO/YOUR/DATA-JSON-DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id ${IMAGE_NAMESPACE}/bwdc-base:${BWDC_VERSION} [-c] [-t] [-s] [-h]
 	----------------------------------------------------------------------------
 	  To run the generic base container using your own data.json file
 	  INTERACTIVELY, mount the directory containing your data.json file
 	  ==> THIS WILL RESULT IN DATA.JSON BEING MODIFIED IF YOU USE bwdc <==
 
 	  Published version:
-	    podman run ${SECRETS} -it --rm --entrypoint bash --volume /PATH/TO/YOUR/DATA-JSON-DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id ghcr.io/hdub-tech/bwdc-base:${BWDC_BASE_IMAGE_VERSION}
+	    podman run ${SECRETS} -it --rm --entrypoint bash --volume /PATH/TO/YOUR/DATA-JSON-DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id ghcr.io/hdub-tech/bwdc-base:${BWDC_VERSION}
 
 	  Local version:
-	    podman run ${SECRETS} -it --rm --entrypoint bash --volume /PATH/TO/YOUR/DATA-JSON-DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id ${IMAGE_NAMESPACE}/bwdc-base:${BWDC_BASE_IMAGE_VERSION}
+	    podman run ${SECRETS} -it --rm --entrypoint bash --volume /PATH/TO/YOUR/DATA-JSON-DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id ${IMAGE_NAMESPACE}/bwdc-base:${BWDC_VERSION}
 
 	===========================================================================
 	EOM
