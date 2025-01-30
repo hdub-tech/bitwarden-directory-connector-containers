@@ -5,11 +5,13 @@
 # Constants
 SCRIPT_DIR="$( cd "$( dirname "${0}" )" && pwd )"
 SCRIPT_NAME="$( basename "${0}" )"
+# shellcheck disable=SC1091
+. "${SCRIPT_DIR}"/functions.sh
 SUPPORTED_BWDC_SYNCS=( gsuite )
 SUPPORTED_SECRETS_MANAGERS=( podman env )
 # Source conf file with versions
 # shellcheck disable=SC1091
-. "${SCRIPT_DIR}/versions.conf"
+. "${SCRIPT_DIR}/defaults.conf"
 DEFAULT_IMAGE_NAMESPACE="hdub-tech"
 
 # Configurable args
@@ -18,6 +20,9 @@ SECRETS_MANAGER="env"
 IMAGE_NAMESPACE="${DEFAULT_IMAGE_NAMESPACE}"
 NO_CACHE=
 OPTIONAL_REBUILD_BWDC_LOGIN_STAGE=
+# If a custom conf, source it for overrides
+# shellcheck disable=SC1091
+[ -e "${SCRIPT_DIR}/custom.conf" ] && . "${SCRIPT_DIR}/custom.conf"
 
 USAGE_HELP=0
 USAGE_ERROR=255
@@ -131,7 +136,6 @@ buildGsuite() {
 
 # Convenient blurb to let you know how to run the container
 usageRun() {
-  . "${SCRIPT_DIR}"/functions.sh
   SECRETS="$( buildPodmanRunSecretsOptions )"
 
   TYPE_VERSION="BWDC_${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE@U}_IMAGE_VERSION"

@@ -3,9 +3,9 @@
 # Constants
 SCRIPT_DIR="$( cd "$( dirname "${0}" )" && pwd )"
 SCRIPT_NAME="$( basename "${0}" )"
-# Source conf file with versions
+# Source conf file with default versions
 # shellcheck disable=SC1091
-. "${SCRIPT_DIR}/versions.conf"
+. "${SCRIPT_DIR}/defaults.conf"
 DEFAULT_BWDC_VERSION="${BWDC_VERSION}"
 DEFAULT_IMAGE_NAMESPACE="hdub-tech"
 
@@ -13,6 +13,9 @@ DEFAULT_IMAGE_NAMESPACE="hdub-tech"
 MAKE_IT_SO=
 NO_CACHE=
 IMAGE_NAMESPACE="${DEFAULT_IMAGE_NAMESPACE}"
+# If a custom conf, source it for overrides
+# shellcheck disable=SC1091
+[ -e "${SCRIPT_DIR}/custom.conf" ] && . "${SCRIPT_DIR}/custom.conf"
 
 USAGE_HELP=0
 USAGE_ERROR=255
@@ -47,10 +50,11 @@ buildBase() {
 
 # Convenient blurb to let you know how to run the container
 usageRun() {
-  BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE="\$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE"
-  SECRETS_MANAGER="env"
 
+  # shellcheck disable=SC1091
   . "${SCRIPT_DIR}"/functions.sh
+  export BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE="\$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE"
+  export SECRETS_MANAGER="env"
   SECRETS="$( buildPodmanRunSecretsOptions )"
 
   cat <<-EOM
