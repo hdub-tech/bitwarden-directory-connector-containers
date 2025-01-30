@@ -1,3 +1,7 @@
+# The version associated with this specific conf file
+# This will be used to tag the image as well
+BWDC_GSUITE_IMAGE_VERSION=1.0.0
+
 # Update values below. The uncommented values are required.
 # Bitwarden Settings > Directory > Domain
 # Google Admin > Account > Domains > Manage domains: The domain you plan to sync

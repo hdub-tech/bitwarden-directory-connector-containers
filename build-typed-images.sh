@@ -111,6 +111,8 @@ buildGsuite() {
   ! ls ./*.conf && exit 7
 
   for conf in *.conf; do
+    # shellcheck disable=SC1090
+    . "${conf}"
     conf_name="$( basename "${conf%.conf}" )"
     # shellcheck disable=SC2086
     podman build ${NO_CACHE} \
