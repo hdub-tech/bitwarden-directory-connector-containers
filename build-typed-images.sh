@@ -9,15 +9,16 @@ SCRIPT_NAME="$( basename "${0}" )"
 . "${SCRIPT_DIR}"/functions.sh
 SUPPORTED_BWDC_SYNCS=( gsuite )
 SUPPORTED_SECRETS_MANAGERS=( podman env )
+
+# Configurable in conf file
+IMAGE_NAMESPACE=
 # Source conf file with versions
 # shellcheck disable=SC1091
 . "${SCRIPT_DIR}/defaults.conf"
-DEFAULT_IMAGE_NAMESPACE="hdub-tech"
 
 # Configurable args
 BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE=
 SECRETS_MANAGER="env"
-IMAGE_NAMESPACE="${DEFAULT_IMAGE_NAMESPACE}"
 NO_CACHE=
 OPTIONAL_REBUILD_BWDC_LOGIN_STAGE=
 # If a custom conf, source it for overrides
@@ -29,14 +30,11 @@ USAGE_ERROR=255
 usage() {
   cat <<EOM
   USAGE:
-    ${SCRIPT_NAME} -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE [-s SECRETS_MANAGER] [-i IMAGE_NAMESPACE] [-n] [-r]
+    ${SCRIPT_NAME} -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE [-s SECRETS_MANAGER] [-n] [-r]
 
    - BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE is one of: [${SUPPORTED_BWDC_SYNCS[*]}]
    - SECRETS_MANAGER is one of: [${SUPPORTED_SECRETS_MANAGERS[*]}]. Note: "env"
      (default) indicates that the secrets are already exported to the environment.
-   - IMAGE_NAMESPACE (default=${DEFAULT_IMAGE_NAMESPACE}). You can specify the
-     namespace portion of the tag (in case you want to push these to your own
-     container registry).
    - Use "-n" to build all container images without cache (--no-cache)
    - Use "-r" to rebuild the final run stage of the type specific container (allows you to test login)
 
@@ -166,7 +164,7 @@ arrayContains() {
   [[ " ${array[*]} " =~ [[:space:]]${search_item}[[:space:]] ]]
 }
 
-while getopts "ht:s:i:nr" opt; do
+while getopts "ht:s:nr" opt; do
   case "${opt}" in
     "h" )
       # h = help
@@ -195,10 +193,6 @@ while getopts "ht:s:i:nr" opt; do
     "r" )
       # r = rebuild run stage
       OPTIONAL_REBUILD_BWDC_LOGIN_STAGE="--build-arg OPTIONAL_REBUILD_BWDC_LOGIN_STAGE=\"$( date +%s )\""
-      ;;
-    "i" )
-      # i = Image Namespace for tag
-      IMAGE_NAMESPACE="${OPTARG}"
       ;;
     * ) usage "${USAGE_ERROR}" ;;
   esac

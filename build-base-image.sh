@@ -7,12 +7,10 @@ SCRIPT_NAME="$( basename "${0}" )"
 # shellcheck disable=SC1091
 . "${SCRIPT_DIR}/defaults.conf"
 DEFAULT_BWDC_VERSION="${BWDC_VERSION}"
-DEFAULT_IMAGE_NAMESPACE="hdub-tech"
 
 # Configurable args
 MAKE_IT_SO=
 NO_CACHE=
-IMAGE_NAMESPACE="${DEFAULT_IMAGE_NAMESPACE}"
 # If a custom conf, source it for overrides
 # shellcheck disable=SC1091
 [ -e "${SCRIPT_DIR}/custom.conf" ] && . "${SCRIPT_DIR}/custom.conf"
@@ -22,14 +20,11 @@ USAGE_ERROR=255
 usage() {
   cat <<EOM
   USAGE:
-    ${SCRIPT_NAME} -c [-b BWDC_VERSION] [-n] [-i IMAGE_NAMESPACE]
+    ${SCRIPT_NAME} -c [-b BWDC_VERSION] [-n]
 
    - -c is the Confirmation flag that you actually meant to execute the script
    - BWDC_VERSION (default=${DEFAULT_BWDC_VERSION}) is X.Y.Z format (no leading v!) and one of: https://github.com/bitwarden/directory-connector/releases
    - Use "-n" to build container image without cache (--no-cache)
-   - IMAGE_NAMESPACE (default=${DEFAULT_IMAGE_NAMESPACE}). You can specify the
-     namespace portion of the tag (in case you want to push this to your own
-     container registry).
 
 EOM
 
@@ -83,7 +78,7 @@ usageRun() {
 	EOM
 }
 
-while getopts "chb:ni:" opt; do
+while getopts "chb:n" opt; do
   case "${opt}" in
     "h" )
       # h = help
@@ -98,9 +93,6 @@ while getopts "chb:ni:" opt; do
     "n" )
       # n = no-cache
       NO_CACHE="--no-cache" ;;
-    "i" )
-      # i = Image Namespace for tag
-      IMAGE_NAMESPACE="${OPTARG}" ;;
     * ) usage "${USAGE_ERROR}" ;;
   esac
 done
