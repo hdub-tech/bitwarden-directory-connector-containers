@@ -5,18 +5,15 @@ SCRIPT_DIR="$( cd "$( dirname "${0}" )" && pwd )"
 SCRIPT_NAME="$( basename "${0}" )"
 DEFAULT_PROJECT_CONFS_DIR="$( cd "${SCRIPT_DIR}/../" && pwd )"
 SUPPORTED_BWDC_TYPES=( gsuite )
-SUPPORTED_MODES=( build config test sync )
+SUPPORTED_MODES=( config test sync )
 REQUIRED_PACKAGES=( podman )
-ROOT_IMAGE_NAME="localhost/hdub-tech/bwdc"
 MINIMUM_PODMAN_VERSION="4.5.0"
 
 # Configurable args
 PROJECT_CONFS_DIR="${DEFAULT_PROJECT_CONFS_DIR}"
 MODE=
 SKIP_PREREQS=
-# TODO: Support specifying bwdc version
-# shellcheck disable=SC1091
-. "${SCRIPT_DIR}"/versions.conf
+IMAGE_NAMESPACE=
 # TODO: SECRETS_MANAGER flag
 SECRETS_MANAGER="env"
 
@@ -26,27 +23,27 @@ usage() {
     A script which will build multiple images of multiple types as a sort
     of one stop shop for doing all of your bwdc syncs (or even just test).
     This github project should be a submodule of your project of confs.
-    This script is intended to be run in a Continuous Integration system.
-    Currently uses bwdc version: ${BWDC_VERSION}
+    This script was designed with simplification for CI and workflows in mind.
+
 >>> (!) WARNING: THIS SCRIPT WILL INSTALL REQUIRED PACKAGES UNLESS RUN WITH -s (!) <<<
 
   USAGE:
-    ${0} -m build|config|test|sync [-p PROJECT_CONFS_DIR] [-s]
+    ${0} -b|-r MODE [-p PROJECT_CONFS_DIR] [-s]
 
   Where:
-    * -m MODE is one of:
-      * build: Builds one container image per conf per supported bwdc directory type
-        (Supported: ${SUPPORTED_BWDC_TYPES[@]})
-      * config: Builds the above images and runs each container, finishing the
-        necessary configuration using the secrets provided
-      * test: Does the above build + config and runs "bwdc test"
-      * sync: Does the above build + config + test and runs "bwdc sync"
+    * -b and/or -r MODE is specified.
+    * -b: Builds all of your typed containers. You can skip this if you already
+      have the images built and published somewhere accessible by this script.
+    * -r MODE is one of:
+      * config: Runs each container, finishing the necessary configuration using
+        the secrets provided
+      * test: Does the above config AND runs "bwdc test"
+      * sync: Does the above config + test AND runs "bwdc sync"
     * PROJECT_CONFS_DIR: The path to your project directory containing subdirs
       for each type of Bitwarden Directory connectors with YOUR configuration
       files. The default (${DEFAULT_PROJECT_CONFS_DIR}) is the directory above
-      this script because it is assumed you followed the instructions in the
-      README and made the bitwarden-directory-connector-containers as a
-      submodule of your project.
+      this script because it is assumed the bitwarden-directory-connector-containers
+      project is a submodule of your project.
     * -s: Skip installing pre-reqs. Useful on non-apt systems which already have
       pre-reqs installed or systems which needed podman installed from source.
 EOM
@@ -97,6 +94,12 @@ EOM
 
 # Copy custom configs
 copyConfigs() {
+  # Copy over the overrides conf file, if it exists
+  if [ -e "${PROJECT_CONFS_DIR}/custom.conf" ]; then
+    cp "${PROJECT_CONFS_DIR}/custom.conf" "${SCRIPT_DIR}/" || exit 11
+  fi
+
+  # Copy over the type specific confs, if the type dir exists
   for type in "${SUPPORTED_BWDC_TYPES[@]}"; do
     if [ -d "${PROJECT_CONFS_DIR}/${type}" ]; then
       # Copy over custom configs
@@ -109,24 +112,33 @@ copyConfigs() {
 buildImages() {
   for type in "${SUPPORTED_BWDC_TYPES[@]}"; do
     if [ -d "${PROJECT_CONFS_DIR}/${type}" ]; then
-      "${SCRIPT_DIR}/container-build.sh" -t "${type}" -s "${SECRETS_MANAGER}" -b "${BWDC_VERSION}" || exit 9
+      "${SCRIPT_DIR}/build-typed-images.sh" -t "${type}" -s "${SECRETS_MANAGER}" || exit $(($?+20))
     fi
   done
 
-  podman image ls "${ROOT_IMAGE_NAME}"*
+  podman image ls "${IMAGE_NAMESPACE}"/*
 }
 
 # Run each container in the mode specified
 runContainers() {
+  ENTRYPOINT_OPTS=
+  case "${MODE}" in
+    "config" ) ENTRYPOINT_OPTS="-c" ;;
+    "test"   ) ENTRYPOINT_OPTS="-c -t" ;;
+    "sync"   ) ENTRYPOINT_OPTS="-c -t -s" ;;
+  esac
+
   for type in "${SUPPORTED_BWDC_TYPES[@]}"; do
     if [ -d "${PROJECT_CONFS_DIR}/${type}" ]; then
       message "INFO" "Running images of type [${type}]"
       for conf in "${SCRIPT_DIR}/${type}"/*.conf; do
         conf_name="$( basename "${conf%.conf}" )"
-	message "INFO" "Running conf [${conf_name}] in mode [${MODE}]"
-        # Since no latest tag, use image id of the most recently created image
-        image_id="$( podman image ls "${ROOT_IMAGE_NAME}-${type}-${conf_name}" --sort created --quiet )"
-        podman run --env-file "${SCRIPT_DIR}/${type}/env.vars" "${image_id}" "${MODE}" || exit 10
+        type_version="BWDC_${type@U}_IMAGE_VERSION"
+        #TODO Add an error handler for this
+        image_tag="$( grep "^${type_version}" "${conf}" | cut -d= -f2 )"
+        message "INFO" "Running conf [${conf_name}] version [${image_tag}] in mode [${MODE}]"
+        # shellcheck disable=SC2086
+        podman run --env-file "${SCRIPT_DIR}/${type}/env.vars" --rm "${IMAGE_NAMESPACE}/bwdc-${type}-${conf_name}":"${image_tag}" ${ENTRYPOINT_OPTS} || exit 10
       done
     else
       message "INFO" "No images of type [${type}] in [${PROJECT_CONFS_DIR}]...skipping"
@@ -134,15 +146,19 @@ runContainers() {
   done
 }
 
-while getopts "p:m:sh" opt; do
+while getopts "bp:r:sh" opt; do
   case "${opt}" in
+    "b" )
+      # b = build typed images
+      BUILD_TYPED_IMAGES="true"
+      ;;
     "p" )
       # p = project dir
       [ ! -d "${OPTARG}" ] && message "ERROR" "Directory does not exist: ${OPTARG}" && usage 8
       PROJECT_CONFS_DIR=$( cd "${OPTARG}" && pwd )
       ;;
-    "m" )
-      # m = mode
+    "r" )
+      # r = run containers
       [[ ! " ${SUPPORTED_MODES[*]} " =~ [[:space:]]${OPTARG}[[:space:]] ]] && usage 1
       MODE="${OPTARG}"
       ;;
@@ -157,7 +173,7 @@ while getopts "p:m:sh" opt; do
   esac
 done
 
-if [ -z "${MODE}" ]; then
+if [ -z "${BUILD_TYPED_IMAGES}" ] && [ -z "${MODE}" ]; then
   usage 3
 else
   # If -s wasn't specified, install pre-reqs
@@ -166,9 +182,15 @@ else
   # Only copy the configs if PROJECT_CONFS_DIR is different from SCRIPT_DIR
   [ "${SCRIPT_DIR}" != "${PROJECT_CONFS_DIR}" ] && copyConfigs
 
-  # Always build images
-  buildImages
+  # Grab our IMAGE_NAMESPACE
+  # shellcheck disable=SC1091
+  . "${SCRIPT_DIR}"/defaults.conf
+  # shellcheck disable=SC1091
+  [ -e  "${SCRIPT_DIR}"/custom.conf ] && . "${SCRIPT_DIR}"/custom.conf
 
-  # Run containers in MODE, unless MODE==build
-  [ "build" != "${MODE}" ] && runContainers
+  # Build typed images, if -b specified
+  [ -n "${BUILD_TYPED_IMAGES}" ] && buildImages
+
+  # Run containers in MODE, if -r specified
+  [ -n "${MODE}" ] && runContainers
 fi
