@@ -14,8 +14,6 @@ PROJECT_CONFS_DIR="${DEFAULT_PROJECT_CONFS_DIR}"
 MODE=
 SKIP_PREREQS=
 IMAGE_NAMESPACE=
-# TODO: SECRETS_MANAGER flag
-SECRETS_MANAGER="env"
 
 usage() {
    cat <<EOM
@@ -112,7 +110,7 @@ copyConfigs() {
 buildImages() {
   for type in "${SUPPORTED_BWDC_TYPES[@]}"; do
     if [ -d "${PROJECT_CONFS_DIR}/${type}" ]; then
-      "${SCRIPT_DIR}/build-typed-images.sh" -t "${type}" -s "${SECRETS_MANAGER}" || exit $(($?+20))
+      "${SCRIPT_DIR}/build-typed-images.sh" -t "${type}" || exit $(($?+20))
     fi
   done
 

@@ -12,6 +12,7 @@ SUPPORTED_SECRETS_MANAGERS=( podman env )
 
 # Configurable in conf file
 BWDC_VERSION=
+SECRETS_MANAGER=
 IMAGE_NAMESPACE=
 # Source conf file with versions
 # shellcheck disable=SC1091
@@ -19,7 +20,6 @@ IMAGE_NAMESPACE=
 
 # Configurable args
 BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE=
-SECRETS_MANAGER="env"
 NO_CACHE=
 OPTIONAL_REBUILD_BWDC_LOGIN_STAGE=
 # If a custom conf, source it for overrides
@@ -31,11 +31,9 @@ USAGE_ERROR=255
 usage() {
   cat <<EOM
   USAGE:
-    ${SCRIPT_NAME} -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE [-s SECRETS_MANAGER] [-n] [-r]
+    ${SCRIPT_NAME} -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE [-n] [-r]
 
    - BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE is one of: [${SUPPORTED_BWDC_SYNCS[*]}]
-   - SECRETS_MANAGER is one of: [${SUPPORTED_SECRETS_MANAGERS[*]}]. Note: "env"
-     (default) indicates that the secrets are already exported to the environment.
    - Use "-n" to build all container images without cache (--no-cache)
    - Use "-r" to rebuild the final run stage of the type specific container (allows you to test login)
 
@@ -164,7 +162,7 @@ arrayContains() {
   [[ " ${array[*]} " =~ [[:space:]]${search_item}[[:space:]] ]]
 }
 
-while getopts "ht:s:nr" opt; do
+while getopts "ht:nr" opt; do
   case "${opt}" in
     "h" )
       # h = help
@@ -176,14 +174,6 @@ while getopts "ht:s:nr" opt; do
         BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE="${OPTARG}"
       else
         usage 1
-      fi
-      ;;
-    "s" )
-      # s = secret manager
-      if arrayContains "${SUPPORTED_SECRETS_MANAGERS[*]}" "${OPTARG}" ; then
-        SECRETS_MANAGER="${OPTARG}"
-      else
-        usage 2
       fi
       ;;
     "n" )
@@ -201,8 +191,8 @@ done
 if [ -z "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" ]; then
   usage 3
 else
-  if [ -z "${SECRETS_MANAGER}" ]; then
-    usage 10
+  if ! arrayContains "${SUPPORTED_SECRETS_MANAGERS[*]}" "${SECRETS_MANAGER}"; then
+    usage 2
   else
     case "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" in
       "gsuite" ) buildGsuite ;;
