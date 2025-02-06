@@ -2,10 +2,12 @@ name: Build
 description: Build bwdc-base image
 
 on:
-  workflow_dispatch:
   pull_request_target:
     branches:
       - main
+    paths:
+      - 'Containerfile'
+  workflow_dispatch:
 
 permissions:
   contents: read
