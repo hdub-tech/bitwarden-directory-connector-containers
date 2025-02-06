@@ -1,154 +1,230 @@
-# MASSIVE WIP - NOT AT ALL FINALIZED
+# bitwarden-directory-connector-containers
 
-# ABOUT
+This project is designed to simplify automation for [`bwdc`] when the user has
+more than one sync profile. It utilizes containers, condensed key=value
+configuration files (in lieu of data.json files, however those are also
+unintentionally supported) and a separate secrets manager (podman, or anything
+that can inject them as environment vars) so that no secrets are on disk or
+stored within the generated images. Users can execute a single script once, and
+it will build an image per sync configuration file, then run `bwdc test` and/or
+`bwdc sync` on all of them.
 
-This project is designed to simplify automation for [`bwdc`] using containers
-and a separate secrets manager so that no secrets are stored within the images.
+This project has two sets of container images:
 
-# REQUIREMENTS
+* The `bwdc-base` image (also referred to as the "base image"), which basically
+  just has bwdc installed and a helper script. This is published to ghcr.io via
+  the [Github packages for this project] (See [base-image.md] for details).
+* The "typed images", which are built off of [`bwdc-base`] and is specific to a
+  Directory Connector type, often abbreviated here as
+  `$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE` (See [typed-images.md] for details).
 
-Podman. (_TODO: Ensure works with Docker_)
+> [!NOTE]
+> Project currently only supports the Gsuite directory connector type for the
+simplified config file method (See [`directory-connector` issues]), but it
+supports `data.json` files of all directory connector types (admittedly
+awkwardly, as it was not the project's purpose. See [BYO data.json method]).
 
-# USAGE
+## Table of Contents
 
-## Configuration files
+* [Background](#background)
+* [Scripts](#scripts)
+* [Requirements](#requirements)
+* [Getting Started](#getting-started)
+* [License(s)](#licenses)
+* [Contributing](#contributing)
+* [Support + Feedback](#support--feedback)
+* [Vulnerability Reporting](#vulnerability-reporting)
+* [Thank You](#thank-you)
 
-Template configuration files are included for each supported Directory Connector
-type.  _Currently only supports `gsuite`._
+## Background
 
-> _COMING "SOON": data.json support_
+I personally did not like dealing with a bunch of `data.json` files or having
+secrets stored in them. So I came up with a way to use simple `key=value`
+configuration files (which mimic the Bitwarden Directory Connector app screens),
+and generate individual container images containing helper scripts to manage
+login/logout/test/sync.
 
-1. Change to the `BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE` directory and copy the
-   template file. Give it a descriptive name ending in `.conf`. For example, if
-   this conf file will contain a User filter for your "Engineering" OU, call it
-   `engineering.conf`.
+## Scripts
 
-   The following is an EXAMPLE:
+Below is a summary of the main scripts in this project, the tasks they are
+related to, files they depend on and links to documentation that explain them.
+
+| Task | Script | Dependencies | Documentation |
+| --- | --- | --- | --- |
+| Build the `bwdc-base` image, which is the root of the rest of the containers. Published by @hdub-tech to [GitHub packages for this project]. | [`build-base-image.sh`] | - [`Containerfile`]<BR>- [`defaults.conf`] / `custom.conf`<BR>- [`build-push-base.yml`] | [base-image.md] |
+| The [`ENTRYPOINT`] of the `bwdc-base` image, and therefore all typed images built off of it. | [`entrypoint.sh`] | N/A | [base-image.md] |
+| Build per-configuration file images, one type per run, optionally without using the podman cache and optionally testing login even if the image was already built. | [`build-typed-images.sh`] | - [`defaults.conf`] / `custom.conf`<BR>- `$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE/Containerfile` ([`gsuite` Containerfile], as an example)<BR>- `$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE/$CONFNAME.conf` ([`gsuite` argfile template], as an example) | - [config-files.md]<BR>- [managing-secrets.md]<BR>- [typed-images.md] |
+| Install dependencies (optional), build all images of all types (EXCEPT the bwdc-base) and/or run all the images. | [`ci.sh`] | - [`defaults.conf`] / `custom.conf`<BR>- `*/Containerfile` ([`gsuite` Containerfile], as an example)<BR>- `*/$CONFNAME.conf` ([`gsuite` argfile template], as an example) | -[config-files.md]<BR>- [typed-images.md] |
+| Utility functions used by other scripts | [`functions.sh`] | N/A | N/A |
+
+## Requirements
+
+* [Podman]>=4.5.0 (`--build-arg-file` option) _(Issue #5 - add Docker support)_
+* bash
+* apt (_ONLY if using [`ci.sh`] WITHOUT `-s` option_)
+* jq (_ONLY if using podman secrets, which is not recommended with this project
+  at this time: Issue #16_)
+
+## Getting Started
+
+> [!TIP]
+> Read through these steps once before checking out the detailed documentation links!
+>
+> It is recommended (but not required) that you use this repository as a
+submodule within your own repository "in production" (particularly if you are
+using [`ci.sh`]), where your repository contains your `custom.conf` and
+type-specific configuration files (See [config-files.md] for details). If you
+are just playing around and trying this out though, use the "no submodule"
+version of the steps below.
+
+1. OPTIONAL: Copy the [`defaults.conf`] file to `custom.conf` file, and update
+   `BWDC_VERSION`, `SECRETS_MANAGER` and `IMAGE_NAMESPACE` as needed (Detailed
+   comments in file; detailed documentation: [config-files.md]). Skip this step
+   if the defaults are acceptable.
    ```bash
-   cd gsuite
-   cp argfile.conf.template engineering.conf
+   # EXAMPLE WHEN USED AS SUBMODULE
+   cp ./bitwarden-directory-connector-containers/defaults.conf ./custom.conf
+   ```
+   ```bash
+   # EXAMPLE FROM THIS PROJECT'S DIRECTORY (no submodule)
+   cp defaults.conf custom.conf
    ```
 
-2. Edit the new conf file for your needs. There are detailed comments in this
-   file describing each option and what the equivalent setting is in the
-   Bitwarden Directory Connector app.
-
-## Secrets setup (first time)
-
-1. Make sure your history is set to ignore commands with a leading space.
-   `HISTCONTROL` should be set to `ignorespace` or `ignoreboth`.
+2. Copy the `$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE/argfile.conf.template` to
+   `$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE/$DESCRIPTIVE_NAME.conf` and update
+   the conf file for your sync needs. This template contains detailed comments
+   on what and how to update. (Detailed documentation at [config-files.md]). Do
+   this once per sync profile / data.json file.
    ```bash
-    echo $HISTCONTROL
-    ```
-    If not set properly, run the following and consider adding it to your bashrc:
-    ```bash
-    export HISTCONTROL=ignorespace
-    ```
+   # GSUITE EXAMPLE WHEN USED AS SUBMODULE
+   mkdir gsuite
+   cp bitwarden-directory-connector-containers/gsuite/argfile.conf.template gsuite/admins.conf
+   vi gsuite/admins.conf
+   ```
+   ```bash
+   # GSUITE EXAMPLE FROM THIS PROJECT'S DIRECTORY (no submodule)
+   cp gsuite/argfile.conf.template gsuite/admins.conf
+   vi gsuite/admins.conf
+   ```
 
-2. Set your secrets. Currently only supports podman secrets or environment variables.
+3. Export your `BW_CLIENTID` and `BW_CLIENTSECRET`, as well as any type specific
+   secrets specified in `$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE/env.vars`
+   ([`gsuite` env sample]) (Detailed documentation: [managing-secrets.md]).
+   ```bash
+   # EXAMPLE (disabling history for commands with leading spaces, then issue exports with a leading space)
+   # Common / needed for all Types
+   export HISTCONTROL="ignorespace"  # or ignoreboth, if you do not want dupes in history either
+    export BW_CLIENTID="organization.123456"
+    export BW_CLIENTSECRET="keepbitwardensecretsecret"
+   ```
+   ```bash
+   # GSUITE EXAMPLE
+    export BW_GSUITEKEY="keepgsuitekeysecret
+   ```
 
-   a. OPTION A: Tell podman your secrets. The secrets must be named as
-      indicated below. ENSURE THESE COMMANDS ARE RUN WITH A LEADING SPACE!
+4. Run the desired scripts for building and running the images:
 
-     1. CLIENTID (format: `organization.UUID`) and CLIENTSECRET for logging in.
-        ```bash
-        # Leading space!
-         echo -n "YOUR_BITWARDEN_CLIENT_ID" | podman secret create bw_clientid -
-        ```
-        ```bash
-        # Leading space!
-         echo -n "YOUR_BITWARDEN_CLIENT_SECRET" | podman secret create bw_clientsecret -
-        ```
-     2. GSUITE ONLY: The private key for your Google cloud project service user.
-        ```bash
-        # Leading space! ONE new line at the end!
-         echo -n "-----BEGIN PRIVATE KEY-----\nMIIEvalueofGSuitePrivatekey\n-----END PRIVATE KEY-----\n" | podman secret create bw_gsuitekey -
-        ```
+    a. **_IF YOU WANT TO INSTALL DEPENDENCIES, BUILD ALL IMAGES OF ALL TYPES
+    (not bwdc-base), AND RUN ALL THE IMAGES IN CONFIG, SYNC or TEST MODE (One
+    script to rule them all)_**: Run the [`ci.sh`] script (Detailed
+    documentation: [typed-images.md]).
+      ```bash
+      # EXAMPLE WHEN USED AS SUBMODULE
+      # Use -h for all options with full descriptions
+      # USAGE: ci.sh [-b] [-r config|test|sync] [-p CONFS_DIR] [-s]
+      ./bitwarden-directory-connector-containers/ci.sh -b -r test
+      ```
+      ```bash
+      # EXAMPLE FROM THIS PROJECT'S DIRECTORY (no submodule):
+      # Use -h for all options with full descriptions
+      # USAGE: ci.sh [-b] [-r config|test|sync] [-p CONFS_DIR] [-s]
+      ./ci.sh -p $PWD -b -r test
+      ```
+    b. **_IF YOU ONLY WANT TO BUILD THE IMAGES OF ONE TYPE AND TEST BWDC
+    LOGIN/LOGOUT_**: Run the [`build-typed-images.sh`] script once per
+    `$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE`, to build one image per config
+    file and run `bwdc login` and `bwdc logout`, which is necesary for the
+    build image process. No secrets will be stored to disk or in the
+    environment of the produced image (Detailed documentation:
+    [typed-images.md]. NOTE: currently does not support submodule method,
+    Issue #14).
+      ```bash
+      # GSUITE EXAMPLE: Use -h for all options
+      ./build-typed-images.sh -t gsuite
+      ```
 
-   b. OPTION B: Set secrets as environment variables. The variables must be
-      named as indicated below. ENSURE THESE COMMANDS ARE RUN WITH A LEADING
-      SPACE!
+## License(s)
 
-     1. CLIENTID (format: `organization.UUID`) and CLIENTSECRET for logging in.
-        ```bash
-        # Leading space!
-          export BW_CLIENTID="YOUR_BITWARDEN_CLIENT_ID"
-        ```
-        ```bash
-        # Leading space!
-         export BW_CLIENT_SECRET="YOUR_BITWARDEN_CLIENT_SECRET"
-        ```
-     2. GSUITE ONLY: The private key for your Google cloud project service user.
-        ```bash
-        # Leading space! ONE new line at the end!
-         export BW_GSUITEKEY="-----BEGIN PRIVATE KEY-----\nMIIEvalueofGSuitePrivatekey\n-----END PRIVATE KEY-----\n"
-        ```
+* [This project's license] (GNU GPL Version 3)
+* Dependent project licenses are in the [licenses] subdirectory
 
-## Build images
+## Contributing
 
-Execute the `docker-build.sh` script to build the images. This will ONLY
-configure images and test `bwdc login` and `bwdc logout`. It will NOT execute
-`bwdc test` or `bwdc sync` commands. No images will store any secrets.
+Issues and PRs welcome!! Please see the [CONTRIBUTING.md] guide for expectations.
 
-All `*.conf` files in the `BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE` directory will
-be processed, and an image will be created and tagged for each.
+## Support + Feedback
 
-_Currently only supports `gsuite`._
+At this writing, this project only has a single (first-time)
+maintainer/contributor, who has a full-time job and a super busy life. That
+said, I really want to help you, and I will try to do so in a timely manner.
 
-```bash
-# See detailed usage statement
-./docker-build.sh -h
-```
+* I have tried to thoroughly document this project, between this README and the
+  [docs] subdirectory. I humbly ask that you review these resources before
+  continuing to the next options.
+* Use [Issues] to request new features and report bugs. Please review open
+  issues first!
+* Use [Discussions] for usage and other questions.
 
-```bash
-# Execute
-./docker-build.sh -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE [-s SECRETS_MANAGER] [-b BWDC_VERSION] [-n] [-r]
-```
+## Vulnerability Reporting
 
-After successful execution, a USABLE sample run command will be output.
+Please see the [SECURITY.md] guide for details.
 
-## Run image
+## Thank You
 
-After running `docker-build.sh`, the appropriate run command will be output to
-the screen, since it varies by type. Running the container will do one of the
-following:
-
-* `config`: Finishes necessary configuration using the secrets provided
-* `test`: Does the above config + runs "bwdc test"
-* `sync`: Does the above config and test + runs "bwdc sync"
-
-Below is a SAMPLE ONLY.
-
-```bash
-# SAMPLE ONLY!!
-#To run non-interactively:
-podman run ${SECRETS[*]} localhost/hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${VERSION} config|test|sync
-```
-
-```bash
-# SAMPLE ONLY!!
-#To run interactively:
-podman run ${SECRETS[*]} -it --entrypoint bash localhost/hdub-tech/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${VERSION}
-```
-
-```bash
-podman run --env-file $BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/env.vars --rm --volume /PATH/TO/YOUR/DATA_JSON_DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id ghrc.io/hdub-tech/bwdc-base:VERSION
-```
-
-# Contributing
-
-1. Link the pre-commit hook so that it will execute before commits.
-    ```bash
-    mkdir .git/hooks
-    ln -s -r .github/pre-commit.sh .git/hooks/pre-commit
-    ```
+* Thank you to the folks at @bitwarden for creating the open source Directory Connector.
+* Thank you to the folks at @auth0 for sharing an excellent [README-sample.md],
+  which helped me craft this one.
+* And a super extra thank you to my boss (Nick Popovich @ [Rotas Security]), who
+  let me take extra time on completing my assignment to design this project
+  generically and share it with the world (and my future self, who will completely
+  forget all of this as soon as I roll onto the next project).
 
 <!-- Links -->
-[`bwdc`]: https://bitwarden.com/help/directory-sync-cli
+[base-image.md]:                    ./docs/base-image.md
+[`build-base-image.sh`]:            ./build-base-image.sh
+[`build-push-base.yml`]:            ./.github/workflows/build-push-base.yml
+[`build-typed-images.sh`]:          ./build-typed-images.sh
+[BYO data.json method]:             ./docs/base-image.md#byo-datajson-method
+[`ci.sh`]:                          ./ci.sh
+[config-files.md]:                  ./docs/config-files.md
+[`Containerfile`]:                  ./Containerfile
+[CONTRIBUTING.md]:                  ./docs/CONTRIBUTING.md
+[`defaults.conf`]:                  ./defaults.conf
+[docs]:                             ./docs
+[`entrypoint.sh`]:                  ./entrypoint.sh
+[`functions.sh`]:                   ./functions.sh
+[`gsuite` argfile template]:        ./gsuite/argfile.conf.template
+[`gsuite` Containerfile]:           ./gsuite/Containerfile
+[`gsuite` env sample]:              ./gsuite/env.vars
+[licenses]:                         ./licenses/
+[SECURITY.md]:                      ./docs/SECURITY.md
+[managing-secrets.md]:              ./docs/managing-secrets.md
+[This project's license]:           ./LICENSE
+[typed-images.md]:                  ./docs/typed-images.md
+[`bwdc`]:                           https://bitwarden.com/help/directory-sync-cli
+[`directory-connector` issues]:     https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues?q=is%3Aissue%20state%3Aopen%20label%3Adirectory-connector
+[Discussions]:                      https://github.com/hdub-tech/bitwarden-directory-connector-containers/discussions
+[`ENTRYPOINT`]:                     https://docs.podman.io/en/latest/markdown/podman-run.1.html#entrypoint-command-command-arg1
+[GitHub packages for this project]: https://github.com/users/hdub-tech/packages?repo_name=bitwarden-directory-connector-containers
+[Issues]:                           https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues
+[Podman]:                           https://podman.io/docs/installation
+[README-sample.md]:                 https://github.com/auth0/open-source-template/blob/master/README-sample.md
+[Rotas Security]:                   https://rotassecurity.com/
 
 <!-- markdownlint-configure-file {
   MD013: {
     code_blocks: false
-  }
+  },
+  MD033: false
 }
 -->
