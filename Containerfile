@@ -46,6 +46,7 @@ LABEL org.opencontainers.image.version=$BWDC_VERSION
 LABEL org.opencontainers.image.description="Contains bwdc (Version: ${BWDC_VERSION}), ${BWUSER} user (id=${BWUID}, home=${WORKING_DIR}) and an entrypoint.sh script for config, test and sync"
 
 USER $BWUSER
+RUN mkdir --parents $WORKING_DIR/.config/Bitwarden\ Directory\ Connector
 ENV BITWARDENCLI_CONNECTOR_PLAINTEXT_SECRETS=true
 COPY --chown=$BWUID:$BWUID --chmod=700 entrypoint.sh $WORKING_DIR/
 ENTRYPOINT ["/bin/bash", "entrypoint.sh"]
