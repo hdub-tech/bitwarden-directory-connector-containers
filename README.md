@@ -181,7 +181,7 @@ Please see the [SECURITY.md] guide for details.
 
 ## Thank You
 
-* Thank you to the folks at @bitwarden for creating the open source Directory Connector.
+* Thank you to the folks at @bitwarden for creating the open source [Directory Connector].
 * Thank you to the folks at @auth0 for sharing an excellent [README-sample.md],
   which helped me craft this one.
 * And a super extra thank you to my boss (Nick Popovich @ [Rotas Security]), who
@@ -194,6 +194,7 @@ Please see the [SECURITY.md] guide for details.
 [`build-base-image.sh`]:            ./build-base-image.sh
 [`build-push-base.yml`]:            ./.github/workflows/build-push-base.yml
 [`build-typed-images.sh`]:          ./build-typed-images.sh
+[`bwdc-base`]:                      ./Containerfile
 [BYO data.json method]:             ./docs/base-image.md#byo-datajson-method
 [`ci.sh`]:                          ./ci.sh
 [config-files.md]:                  ./docs/config-files.md
@@ -212,6 +213,7 @@ Please see the [SECURITY.md] guide for details.
 [This project's license]:           ./LICENSE
 [typed-images.md]:                  ./docs/typed-images.md
 [`bwdc`]:                           https://bitwarden.com/help/directory-sync-cli
+[Directory Connector]:              https://github.com/bitwarden/directory-connector
 [`directory-connector` issues]:     https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues?q=is%3Aissue%20state%3Aopen%20label%3Adirectory-connector
 [Discussions]:                      https://github.com/hdub-tech/bitwarden-directory-connector-containers/discussions
 [`ENTRYPOINT`]:                     https://docs.podman.io/en/latest/markdown/podman-run.1.html#entrypoint-command-command-arg1

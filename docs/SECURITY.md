@@ -1,19 +1,19 @@
 # Security Policy
 
 I take security extremely seriously, but I'm still thinking through how I want
-to handle this (_Issue #13_). This is my first public project, and I'm not used
+to handle this (_[Issue #13]_). This is my first public project, and I'm not used
 to being on this side of the curtain. In the meantime, if you find a security
-problem, please [open an issue] and add the label "security" to the issue. If it
-is a huge terrifying security issue, I would ask that you consider not putting
-the full details there until I have a chance to respond and connect with you. I
-will never sweep a security issue under the rug; I'm just asking for the chance
-to make it right. Thank you!
+problem, please [open an issue] and add the label "Type: security" to the
+issue. If it is a huge terrifying security issue, I would ask that you
+consider not putting the full details there until I have a chance to respond
+and connect with you. I will never sweep a security issue under the rug; I am
+just asking for the chance to make it right. Thank you!
 
 <details>
 
 > [!NOTE]
 > This is just Github's template - I still need to actually flesh it out
-(_Issue #13_).
+(_[Issue #13]_).
 
 ## Supported Versions
 
@@ -37,6 +37,7 @@ declined, etc.
 </details>
 
 <!-- Links -->
+[Issue #13]:     https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/13
 [open an issue]: https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/new/choose
 
 <!-- markdownlint-configure-file {

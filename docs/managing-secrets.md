@@ -4,7 +4,7 @@ This project currently supports the following methods of managing secrets when
 running the containers:
 
 * Secrets as exported environment variables (recommended)
-* ~Secrets managed with [Podman secrets]~ (Nope - see Issue #16)
+* ~Secrets managed with [Podman secrets]~ (Nope - see [Issue #16])
 
 > [!NOTE]
 > In case you are wondering why Bitwarden secrets manager is not supported, it
@@ -27,8 +27,8 @@ free to open an issue if you are interested in seeing that feature.
 
    <!-- markdownlint-disable-next-line no-space-in-code -->
 2. Set your secrets by running ` export VARIABLE="VALUE"` (WITH A LEADING
-   SPACE!) or setting them in your CI tool. The following chart explains which
-   variables are required, when and points out if there are any quirks. All
+   SPACE!) or setting them in your CI tool. The following table explains which
+   variables are required and when, and points out if there are any quirks. All
    these variable names must be exact.
 
    | Variable | Type | Export if running... | Notes |
@@ -40,7 +40,7 @@ free to open an issue if you are interested in seeing that feature.
 ## Podman secrets
 
 This is currently only partially supported, and therefore I am skipping updating
-this section and just leaving my original notes hidden. Please see Issue #16 for
+this section and just leaving my original notes hidden. Please see [Issue #16] for
 full details on how I got in this pickle.
 
 <details>
@@ -66,11 +66,12 @@ full details on how I got in this pickle.
 </details>
 
 <!-- Links -->
-[Bitwarden Admin Console]:          https://bitwarden.com/help/public-api/#authentication
-[`build-typed-images.sh`]:          ../build-typed-images.sh
-[`ci.sh`]:                          ../ci.sh
-[GCP service account]:              https://bitwarden.com/help/workspace-directory/#obtain-service-account-credentials
-[Podman secrets]: https://docs.podman.io/en/latest/markdown/podman-secret.1.html
+[Bitwarden Admin Console]: https://bitwarden.com/help/public-api/#authentication
+[`build-typed-images.sh`]: ../build-typed-images.sh
+[`ci.sh`]:                 ../ci.sh
+[GCP service account]:     https://bitwarden.com/help/workspace-directory/#obtain-service-account-credentials
+[Issue #16]:               https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/16
+[Podman secrets]:          https://docs.podman.io/en/latest/markdown/podman-secret.1.html
 
 <!-- markdownlint-configure-file {
   MD013: {

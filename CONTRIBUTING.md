@@ -2,15 +2,15 @@
 
 ## Issues and PRs welcome!!
 
-_Issue #6: Add Code of Conduct stuff. In the meantime, be good to each other or
+_[Issue #6]: Add Code of Conduct stuff. In the meantime, be good to each other or
 I will banhammer you. You will have one opportunity to apologize for bad
 behavior, and then you are gone._
 
-_Issue #7: Add [DCO]_
+_[Issue #7]: Add [DCO]_
 
 > [!TIP]
 > Signing (`Verified` tag) and Signing off on (`Signed-Off-by`) your commits is
-required. HOWEVER, unlike most projects which require this, @hdub-tech will
+required. HOWEVER, unlike most projects which require this, [@hdub-tech] will
 NEVER require your real name be in the `Signed-Off-by` line. We firmly believe
 you should be able to contribute to open source AND maintain your privacy.
 
@@ -31,6 +31,9 @@ ln -s -r .github/pre-commit.sh .git/hooks/pre-commit
 [Linting workflow]: ./.github/workflows/lint.yml
 [pre-commit.sh]:    ./.github/pre-commit.sh
 [DCO]:              https://developercertificate.org/_
+[@hdub-tech]:       https://github.com/hdub-tech
+[Issue #6]:         https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/6
+[Issue #7]:         https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/7
 
 <!-- markdownlint-configure-file {
   MD026: false

@@ -21,7 +21,7 @@ Typed image Containerfiles all follow the same basic format:
     the `data.json` file).
   * Mounts the `BW_CLIENTID` and `BW_CLIENTSECRET` secrets for use during the
     build.
-  * `bwdc login` (generates a `data.json` file).
+  * `bwdc login` (generates the `data.json` file).
   * `bwdc config directory $N` (with the appropriate directory connector type).
   * `bwdc logout`.
   * A massive `jq` statement to create a `data.json.new` file using the
@@ -46,7 +46,7 @@ a [git submodule]. Please see [config-files.md] for details.
     * [Build all images and run in test mode](#build-all-images-and-run-in-test-mode)
     * [Build all images and run in sync mode](#build-all-images-and-run-in-sync-mode)
     * [Run all containers in sync mode without building images or installing pre-requisites](#run-all-containers-in-sync-mode-without-building-images-or-installing-pre-requisites)
-    * [Only build all imags](#only-build-all-images)
+    * [Only build all images](#only-build-all-images)
 * [Building](#building)
   * [build-typed-images.sh](#build-typed-imagessh)
     * [Examples](#examples-1)
@@ -78,7 +78,7 @@ executed, if the options for that were specified.
 
 * Pre-requisites will be installed on the system, unless `-s` (skip) is specified.
 * If this project is embedded as a submodule, configuration files will be copied
-  into the submodule (_Stopgap until Issue #14 is resolved_).
+  into the submodule (_Stopgap until [Issue #14] is resolved_).
 * Pulls in [`defaults.conf`], and then `custom.conf` for any overrides.
 * Builds all images for all configuration files for all supported Directory
   Connector types, if `-b` was specified.
@@ -125,7 +125,7 @@ is too old).
 
 ```bash
 # Fast primary use case
-# Install pre-reqs, build all images, and run all images in config+test+sync mode
+# ONLY run all images in config+test+sync mode
 ./bitwarden-directory-connector-containers/ci.sh -s -r sync
 ```
 
@@ -135,7 +135,7 @@ This is useful if you want to push the images to your own container registry so
 you can take advantage of the previous example, which will speed up runtimes.
 
 ```bash
-# Only build all images
+# ONLY build all images
 ./bitwarden-directory-connector-containers/ci.sh -s -b
 ```
 
@@ -159,7 +159,7 @@ you haven't set-up your own project with this project as a submodule (Details:
   [`defaults.conf`]/`custom.conf`
 * For each `*.conf` file in the `$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE`
   directory, `podman build` is executed:
-  * supplying the `*.conf` file with `--build-arg-file`
+  * supplying the `.conf` file with `--build-arg-file`
   * supplying the secrets with `--secret`
   * supplying the `BWDC_VERSION` and the name of the conf file with `--build-arg`
   * tagging it as the `$IMAGE_NAMESPACE/bwdc-${BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE}-${CONF_NAME}:${BWDC_<TYPE>_IMAGE_VERSION}`
@@ -180,8 +180,8 @@ Primary use case for this script.
 
 ##### Build all gsuite images, while always rebuilding the login stage
 
-This is useful if you've recently rotated secrets (which wouldn't be picked up
-by podman) and/or you want to regenerate the `data.json` within the image (no
+This is useful if you have recently rotated secrets (which would not be picked
+up by podman) and/or you want to regenerate the `data.json` within the image (no
 secrets are stored within) and/or test `bwdc login` and `bwdc logout`.
 
 ```bash
@@ -221,17 +221,18 @@ at the top of the corresponding Containerfile.
 [Building AND running (`ci.sh`)]: #building-and-running-cish
 [the top of this document]:       #typed-images
 [Run all containers]:             #run-all-containers-in-sync-mode-without-building-images-or-installing-pre-requisites
-[`bwdc-base`]:             ./base-image.md
-[`build-typed-images.sh`]:   ../build-typed-images.sh
-[`ci.sh`]:                   ../ci.sh
-[config-files.md]:           ./config-files.md
-[Submodule set-up]:          ./config-files.md#submodule-set-up
-[`defaults.conf`]:           ../defaults.conf
-[`gsuite` argfile template]: ../gsuite/argfile.conf.template
-[`gsuite/Containerfile`]:    ../gsuite/Containerfile
-[managing-secrets.md]:       ./managing-secrets.md
+[`bwdc-base`]:                   ./base-image.md
+[`build-typed-images.sh`]:       ../build-typed-images.sh
+[`ci.sh`]:                       ../ci.sh
+[config-files.md]:               ./config-files.md
+[Submodule set-up]:              ./config-files.md#submodule-set-up
+[`defaults.conf`]:               ../defaults.conf
+[`gsuite` argfile template]:     ../gsuite/argfile.conf.template
+[`gsuite/Containerfile`]:        ../gsuite/Containerfile
+[managing-secrets.md]:           ./managing-secrets.md
 [ghcr.io/hdub-tech/bwdc-base:$BWDC_VERSION]: https://github.com/users/hdub-tech/packages?repo_name=bitwarden-directory-connector-containers
-[git submodule]:         https://git-scm.com/book/en/v2/Git-Tools-Submodules
+[git submodule]:                             https://git-scm.com/book/en/v2/Git-Tools-Submodules
+[Issue #14]:                                 https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/14
 
 <!-- markdownlint-configure-file {
   MD024: false

@@ -2,7 +2,7 @@
 
 This README documents the `bwdc-base` image, also referred to as the "base image."
 > [!TIP]
-> If you are using the directory connector "typed containers (Gsuite, etc),
+> If you are using the directory connector "typed" containers (Gsuite, etc),
 which is the primary use case of this repo, you do not need to do anything
 documented here!
 <!-- markdownlint-disable-next-line no-blanks-blockquote -->
@@ -23,23 +23,22 @@ the [BYO data.json method], you can skip directly to that section below.
 
 ## Description
 
-The [`bwdc-base` image] is the `FROM` of the "directory connector typed" images
+The [`bwdc-base` image] is the `FROM` of the directory connector "typed" images
 (Gsuite, etc) and it can be used if you are bringing your own (complete)
 `data.json` files (rather than using the [config file method]). The image is
 based on [Debian 12 slim] and it:
 
-- Upgrades itself
-- Installs only the necessary packages
-- Creates a non-root `bitwarden` user and working directory
+- Upgrades itself.
+- Installs only the necessary packages.
+- Creates a non-root `bitwarden` user and working directory.
 - Downloads and installs [`bwdc` from Github] to `/usr/local/bin`
-  (`BWDC_VERSION` specified in [`defaults.conf`])
+  (`BWDC_VERSION` specified in [`defaults.conf`] / `custom.conf`).
 - Sets the `BITWARDENCLI_CONNECTOR_PLAINTEXT_SECRETS` environment variable to
   `true` (necessary because we are working with [secrets in a headless
-  environment])
-- Copies in the [`entrypoint.sh`] helper script which has options to configure
+  environment]).
+- Copies in the [`entrypoint.sh`] helper script (which has options to configure
   the `data.json` file with secrets exported to the environment, run `bwdc test`
-  (ensuring you are logged in and back out as necessary) and `bwdc sync` (ditto
-  on the login/logout).
+  and/or `bwdc sync`, ensuring you are logged in and back out as necessary).
 
 ## Building
 
@@ -54,7 +53,7 @@ Building the [`bwdc-base` image] is only required if:
 
 ### Requirements
 
-- Podman _(Issue #5 - add Docker support)_
+- Podman _([Issue #5] - add Docker support)_
 
 ### How
 
@@ -71,13 +70,15 @@ Building the [`bwdc-base` image] is only required if:
     ```
 3. TEST the produced `localhost/hdub-tech/bwdc-base:$BWDC_VERSION` container
    locally to ensure it still works.
-   > [!IMPORTANT]
-   > Demonstrating how you tested will be REQUIRED for your PR, so please take
-   some screenshots and/or keep your test commands!
+<!-- markdownlint-disable blanks-around-lists ol-prefix -->
+> [!IMPORTANT]
+> Demonstrating how you tested will be REQUIRED for your PR, so please take
+some screenshots and/or keep your test commands!
 4. COMMIT the [`defaults.conf`] file (_Signed and Signed-Off commits please,
    real name is **NOT** required - see [CONTRIBUTING.md]_).
 5. Open a PR to bump the version. Document how you tested. Ensure the Actions
    for your PR passed.
+<!-- markdownlint-enable blanks-around-lists ol-prefix -->
 
 ## Published image
 
@@ -90,7 +91,7 @@ supported versions.
 ## BYO data.json method
 
 The `ghcr.io/hdub-tech/bwdc-base` container DOES support being used in the same
-fashion as the individually created "directory connector typed" containers.
+fashion as the individually created directory connector "typed" containers.
 
 > [!NOTE]
 > _I created this project as part of a work task so, for the time being, I am only putting 9-5 time in on the things I need, while still trying to keep it decently clean, modular and professional. This means that it is currently only useful to other people using Gsuite OR people who have a pile of data.json files that they manage in some way, shape or form. Please understand that even though this method works, it was not intentionaly designed...it was just one of those things I realized would work after the fact. If you are using any of the other directory connectors, please comment on the corresponding open issue so I know you are interested in me moving forward on them ([LDAP], [Azure], [OneLogin], [Okta])._
@@ -174,11 +175,12 @@ related tickets ([LDAP], [Azure], [OneLogin], [Okta])!
 - **Option 1**: Your `data.json` files already contain the secrets in plain
   text (ANY directory connector type). You can just omit the `${SECRETS}`
   argument in the above commands! If you use the `entrypoint.sh` script, omit
-  the `-c` flag.
+  the `-c` flag. If you run `bwdc logout` in the container, and try to `bwdc
+  login` again, you will be prompted for the Client ID and Client Secret.
 - **Option 2**: You have Gsuite `data.json` files WITHOUT the secrets in them,
   and you are not looking to use the config files method.
-  1. Set-up secrets as environment variables or with podman secrets, as spelled
-     out in the [managing-secrets.md] README.
+  1. Set-up secrets as environment variables ~or with podman secrets~, as
+     described in [managing-secrets.md].
   2. Substitute `${SECRETS}` with `--env-file gsuite/env.vars --env
      BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE=gsuite` in the above commands.
   3. If running NON-interactively, be sure to INCLUDE the `-c` option. If
@@ -186,7 +188,6 @@ related tickets ([LDAP], [Azure], [OneLogin], [Okta])!
      to run `bwdc config` before any other `bwdc` commands.
 - **Option 3**: You are using NON-Gsuite directory connector type and the
   secrets are not in the `data.json`. (_If you are using any of the other
-  
   directory connectors, please comment on the corresponding open issue so I know
   you are interested in me moving forward on them ([LDAP], [Azure], [OneLogin],
   [Okta])._)
@@ -211,6 +212,7 @@ related tickets ([LDAP], [Azure], [OneLogin], [Okta])!
 [`bwdc` from Github]:    https://github.com/bitwarden/directory-connector/releases
 [Debian 12 slim]:        https://hub.docker.com/_/debian/tags?name=12-slim
 [ghcr.io]:               https://ghcr.io
+[Issue #5]:              https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/5
 [LDAP]:                  https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/8
 [Okta]:                  https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/11
 [OneLogin]:              https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/10
