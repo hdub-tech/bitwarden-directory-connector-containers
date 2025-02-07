@@ -14,7 +14,7 @@ SUPPORTED_SECRETS_MANAGERS=( podman env )
 BWDC_VERSION=
 SECRETS_MANAGER=
 IMAGE_NAMESPACE=
-# Source conf file with versions
+# Source conf file with defaults
 # shellcheck disable=SC1091
 . "${SCRIPT_DIR}/defaults.conf"
 
@@ -34,7 +34,7 @@ usage() {
     ${SCRIPT_NAME} -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE [-n] [-r]
 
    - BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE is one of: [${SUPPORTED_BWDC_SYNCS[*]}]
-   - Use "-n" to build all container images without cache (--no-cache)
+   - Use "-n" to build all container images without cache (podman --no-cache)
    - Use "-r" to rebuild the final run stage of the type specific container (allows you to test login)
 
 EOM

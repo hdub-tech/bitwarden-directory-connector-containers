@@ -3,17 +3,17 @@
 #    Defaults:
 #    podman build --build-arg-file defaults.conf -t hdub-tech/bwdc-base:BWDC_VERSION -f Containerfile
 #
-#    Overridesa:
+#    Overrides:
 #    podman build --build-arg-file custom.conf -t hdub-tech/bwdc-base:dev -f Containerfile
 #
 #  RUN:
 #    Non-interactive:
-#    podman run --env-file $BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/env.vars --rm --volume /PATH/TO/DATA_JSON_DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id hdub-tech/bwdc-base:BWDC_VERSION [-h] [-c] [-t] [-s]
+#    podman run --env-file $BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/env.vars --rm --volume /PATH/TO/DATA_JSON_DIR:/bwdc/.config/Bitwarden\ Directory\ Connector:O --userns=keep-id hdub-tech/bwdc-base:BWDC_VERSION [-h] [-c] [-t] [-s]
 #
 #    Interactive:
-#    podman run --env-file $BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/env.vars -it --entrypoint bash --rm --volume /PATH/TO/DATA_JSON_DIR:/bwdc/.config/Bitwarden\ Directory\ Connector --userns=keep-id hdub-tech/bwdc-base:BWDC_VERSION
-#    bitwarden@deadbeef1234:~$ ./entrypoint -h  #List help for container script
-#    bitwarden@deadbeef1234:~$ bwdc help        #Use raw bwdc cli with your mounted data.json
+#    podman run --env-file $BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/env.vars -it --entrypoint bash --rm --volume /PATH/TO/DATA_JSON_DIR:/bwdc/.config/Bitwarden\ Directory\ Connector:O --userns=keep-id hdub-tech/bwdc-base:BWDC_VERSION
+#    bitwarden@abcdef123456:~$ ./entrypoint -h  #List help for container script
+#    bitwarden@abcdef123456:~$ bwdc help        #Use raw bwdc cli with your mounted data.json
 #
 FROM docker.io/debian:12-slim
 

@@ -3,7 +3,7 @@
 # Constants
 SCRIPT_DIR="$( cd "$( dirname "${0}" )" && pwd )"
 SCRIPT_NAME="$( basename "${0}" )"
-# Source conf file with default versions
+# Source conf file with defaults
 # shellcheck disable=SC1091
 . "${SCRIPT_DIR}/defaults.conf"
 DEFAULT_BWDC_VERSION="${BWDC_VERSION}"
@@ -24,7 +24,7 @@ usage() {
 
    - -c is the Confirmation flag that you actually meant to execute the script
    - BWDC_VERSION (default=${DEFAULT_BWDC_VERSION}) is X.Y.Z format (no leading v!) and one of: https://github.com/bitwarden/directory-connector/releases
-   - Use "-n" to build container image without cache (--no-cache)
+   - Use "-n" to build container image without cache (podman --no-cache)
 
 EOM
 

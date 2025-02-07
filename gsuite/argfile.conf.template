@@ -1,8 +1,8 @@
+# Update values below. The uncommented values are required.
 # The version associated with this specific conf file
 # This will be used to tag the image as well
 BWDC_GSUITE_IMAGE_VERSION=1.0.0
 
-# Update values below. The uncommented values are required.
 # Bitwarden Settings > Directory > Domain
 # Google Admin > Account > Domains > Manage domains: The domain you plan to sync
 GOOGLE_DOMAIN=example.com
@@ -38,7 +38,7 @@ GOOGLE_SERVICE_USER_EMAIL=your_gcloud_serviceuser@your_gcloud_bitwardens_app.iam
 # Bitwarden Settings > Directory > Group Filter
 #GOOGLE_SYNC_GROUP_FILTER=|email=admin@example.com
 
-# The following are sync management settings. Defaults in Containerfile, the
+# The following are sync management settings. Defaults in sync.json, the
 # following are overrides.
 # Bitwarden Settings > Sync > Remove disabled users during sync checkbox
 #GOOGLE_SYNC_REMOVE_DISABLED=true
