@@ -1,0 +1,6 @@
+# Project specific
+custom.conf
+*/*.conf
+
+# Other
+*.swp

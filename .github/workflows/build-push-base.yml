@@ -1,26 +1,22 @@
-name: Build
-description: Build bwdc-base image
+name: Build/Push
+description: Build bwdc-base image and push to ghcr.io
 
 on:
-  pull_request_target:
-    branches:
-      - main
-    paths:
-      - 'Containerfile'
   workflow_dispatch:
 
 permissions:
   contents: read
+  packages: write
 
 env:
   IMAGE_NAME: bwdc-base
+  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+  REGISTRY_USER: ${{ github.actor }}
+  REGISTRY_PASSWORD: ${{ github.token }}
 
 jobs:
-  build-bwdc-base:
+  build-push-bwdc-base:
     runs-on: ubuntu-latest
-    outputs:
-      built_image: ${{ steps.build_base_image.outputs.image }}
-      built_tags: ${{ steps.build_base_image.outputs.tags }}
 
     steps:
       - name: Check-out repository under $GITHUB_WORKSPACE
@@ -38,3 +34,12 @@ jobs:
           image: ${{ env.IMAGE_NAME }}
           tags: ${{ env.BWDC_VERSION }} ${{ github.sha }}
           extra-args: --build-arg-file defaults.conf
+
+      - name: Push image to ghcr.io
+        uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c  #v2.8
+        with:
+          image: ${{ steps.build_base_image.outputs.image }}
+          tags: ${{ steps.build_base_image.outputs.tags }}
+          registry: ${{ env.IMAGE_REGISTRY }}
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}

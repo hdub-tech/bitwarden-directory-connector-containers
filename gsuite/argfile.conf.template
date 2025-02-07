@@ -1,0 +1,51 @@
+# Update values below. The uncommented values are required.
+# The version associated with this specific conf file
+# This will be used to tag the image as well
+BWDC_GSUITE_IMAGE_VERSION=1.0.0
+
+# Bitwarden Settings > Directory > Domain
+# Google Admin > Account > Domains > Manage domains: The domain you plan to sync
+GOOGLE_DOMAIN=example.com
+
+# Bitwarden Settings > Directory > Admin User
+# Google Admin > Account > Admin roles: The email of someone in one of the following roles:
+# Super Admin, User Management Admin, a custom role with full User access
+# This is NOT to be confused with the service user email address, this is the
+# email of an admin which the service user can impersonate.
+GOOGLE_ADMIN_USER_EMAIL=your_admin_user_not_service_user@example.com
+
+# Bitwarden Settings > Directory > Client Email (from key file)
+# Google Cloud Console > [YourBitwardenProject] > APIs & Services > Credentials > Service Accounts
+GOOGLE_SERVICE_USER_EMAIL=your_gcloud_serviceuser@your_gcloud_bitwardens_app.iam.gserviceaccount.com
+
+# Bitwarden Settings > Directory > Customer Id
+# Google Admin > Account > Account settings > Customer ID
+# Highly recommend testing without setting this as it appears unused
+#GOOGLE_CUSTOMER=
+
+# To sync users, uncomment the next two settings and update the filter
+# Examples: https://bitwarden.com/help/workspace-directory/#specify-sync-filters
+# Bitwarden Settings > Directory > Sync users checkbox
+#GOOGLE_SYNC_USERS=true
+# Bitwarden Settings > Directory > User Filter
+#GOOGLE_SYNC_USER_FILTER=|orgUnitPath='/My OU'
+
+# To sync groups, uncomment the next two settings and update the filter
+# NOTE: This will not add the users in the groups, unless those users were
+# synched with a User Filter! This will just create groups in bitwarden
+# Bitwarden Settings > Directory > Sync groups checkbox
+#GOOGLE_SYNC_GROUPS=true
+# Bitwarden Settings > Directory > Group Filter
+#GOOGLE_SYNC_GROUP_FILTER=|email=admin@example.com
+
+# The following are sync management settings. Defaults in sync.json, the
+# following are overrides.
+# Bitwarden Settings > Sync > Remove disabled users during sync checkbox
+#GOOGLE_SYNC_REMOVE_DISABLED=true
+
+# Bitwarden Settings > Sync > More than 2000 users or groups are expected to sync
+#GOOGLE_SYNC_LARGE_IMPORT=true
+
+# Bitwarden Settings > Sync > Remove and re-add organization users during the
+# next sync
+#GOOGLE_SYNC_OVERWRITE_EXISTING=true
