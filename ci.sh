@@ -83,7 +83,7 @@ EOM
         The installed version of podman (${podman_version}) is not the
         minimum version required (${MINIMUM_PODMAN_VERSION}). This is likely
         due to the repository containing an older version than is required by
-        this peoject, which means you will need to build podman from source.
+        this project, which means you will need to build podman from source.
         After doing that, please re-run this script with "-s" to skip the
         dependency installation step.
 EOM

@@ -71,6 +71,7 @@ summary of the script is provided below.
 > [!NOTE]
 > **_Building_** an image will result in `bwdc login` and `bwdc logout`
 commands being executed.
+>
 > **_Running_** a container can result in `bwdc test` and `bwdc sync` being
 executed, if the options for that were specified.
 <!-- markdownlint-disable-next-line no-blanks-blockquote -->
