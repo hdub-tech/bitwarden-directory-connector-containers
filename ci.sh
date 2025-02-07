@@ -6,7 +6,6 @@ SCRIPT_NAME="$( basename "${0}" )"
 DEFAULT_PROJECT_CONFS_DIR="$( cd "${SCRIPT_DIR}/../" && pwd )"
 SUPPORTED_BWDC_TYPES=( gsuite )
 SUPPORTED_MODES=( config test sync )
-REQUIRED_PACKAGES=( podman )
 MINIMUM_PODMAN_VERSION="4.5.0"
 
 # Configurable args
@@ -57,23 +56,26 @@ message() {
 
 # Requirements: podman>=4.5.0
 preReqs() {
-  if ! which apt; then
-    cat <<EOM
-      ${0} currently only supports apt based systems for pre-req installation.
-      Please install the pre-reqs manually and re-run script with -s flag.
-      Pre-reqs: [${REQUIRED_PACKAGES[@]}]
+  # Protection from podman installed from source, which apt will not detect
+  if ! which podman >/dev/null; then
+    if ! which apt >/dev/null; then
+      cat <<EOM
+        ${0} currently only supports apt based systems for pre-req installation.
+        Please install the pre-reqs manually and re-run script with -s option.
+        Pre-reqs: [podman]
 EOM
-    exit 4
+      exit 4
+    fi
+
+    # If conf files exist and are modified, prefer the old and don't prompt
+    dpkg_options=( -o Dpkg::Options::="--force-confold" )
+    (sudo apt-get update && \
+       sudo apt-get upgrade --assume-yes "${dpkg_options[@]}" && \
+       sudo apt-get install --assume-yes "${dpkg_options[@]}" podman) || exit 5
   fi
 
-  # If conf files exist and are modified, prefer the old and don't prompt
-  dpkg_options=( -o Dpkg::Options::="--force-confold" )
-  (sudo apt-get update && \
-     sudo apt-get upgrade --assume-yes "${dpkg_options[@]}" && \
-     sudo apt-get install --assume-yes "${dpkg_options[@]}" "${REQUIRED_PACKAGES[@]}") || exit 5
-
   # Check if podman is installed and the minimum required version
-  if which podman; then
+  if which podman >/dev/null; then
     podman_version="$( podman --version | cut -d' ' -f3 )"
     printf -v expected_sort '%s\n%s' "${MINIMUM_PODMAN_VERSION}" "${podman_version}"
     if [[ "${expected_sort}" != "$( sort -V <<< "${expected_sort}")" ]]; then
@@ -86,6 +88,8 @@ EOM
         dependency installation step.
 EOM
       exit 6
+    else
+      echo "Installed version of podman (${podman_version}) is >= minimum (${MINIMUM_PODMAN_VERSION})...continuing"
     fi
   fi
 }

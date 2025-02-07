@@ -64,8 +64,9 @@ a [git submodule]. Please see [config-files.md] for details.
 > This is the ultimate and recommended way to use this project.
 
 The [`ci.sh`] was designed to be the only command a CI system needs to execute.
-It will **_build and run_** all typed images, depending on the options sent to
-the script. A summary of the script is provided below.
+It will verify dependencies are present and the necessary version and **_build
+and run_** all typed images, depending on the options sent to the script. A
+summary of the script is provided below.
 
 > [!NOTE]
 > **_Building_** an image will result in `bwdc login` and `bwdc logout`
