@@ -25,7 +25,7 @@ LABEL org.opencontainers.image.licenses="GPL-3.0"
 # Install dependencies
 # hadolint ignore=DL3008
 RUN apt-get update \
-    && apt-get upgrade \
+    && apt-get -y upgrade \
     && apt-get -y install --no-install-recommends wget ca-certificates unzip libsecret-1-0 jq \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
