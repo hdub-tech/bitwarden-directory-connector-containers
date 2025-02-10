@@ -22,8 +22,11 @@ jobs:
       - name: Check-out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  #v4.2.2
 
-      - name: Set bwdc-base version number based on the version of bwdc
+      - name: Tag bwdc-base based on the version of bwdc
         run: grep "^BWDC_VERSION=" "$GITHUB_WORKSPACE"/defaults.conf >> "$GITHUB_ENV"
+
+      - name: Tag bwdc-base based on the release of this project
+        run: grep "^BDCC_VERSION=" "$GITHUB_WORKSPACE"/defaults.conf >> "$GITHUB_ENV"
 
       - name: Build image with buildah
         id: build_base_image
@@ -32,7 +35,7 @@ jobs:
           # buildah-build always adds github.workspace, even if you already did it for them
           containerfiles: Containerfile
           image: ${{ env.IMAGE_NAME }}
-          tags: ${{ env.BWDC_VERSION }} ${{ github.sha }}
+          tags: ${{ env.BWDC_VERSION }} ${{ env.BDCC_VERSION }} ${{ github.sha }}
           extra-args: --build-arg-file defaults.conf
 
       - name: Push image to ghcr.io

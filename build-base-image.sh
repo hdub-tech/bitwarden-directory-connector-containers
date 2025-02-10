@@ -35,9 +35,11 @@ EOM
 
 # Build common base image
 buildBase() {
+  # shellcheck disable=SC2153
   podman build ${NO_CACHE} \
     --build-arg BWDC_VERSION="${BWDC_VERSION}" \
     -t "${IMAGE_NAMESPACE}"/bwdc-base:"${BWDC_VERSION}" \
+    -t "${IMAGE_NAMESPACE}"/bwdc-base:"${BDCC_VERSION}" \
     -f Containerfile \
     || exit 1
 }
