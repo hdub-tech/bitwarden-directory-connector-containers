@@ -13,6 +13,8 @@ This document explains how to set-up configuration files based on your use case.
 ## Table of Contents
 
 * [Submodule set-up](#submodule-set-up)
+  * [Adding bitwarden-directory-connector-containers as a submodule](#adding-bitwarden-directory-connector-containers-as-a-submodule)
+  * [Setting submodule to a specific release](#setting-submodule-to-a-specific-release)
 * [`defaults.conf` / `custom.conf`](#defaultsconf--customconf)
 * [`$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/argfile.conf.template`](#bitwardencli_connector_directory_typeargfileconftemplate)
   * [Common](#common)
@@ -35,8 +37,37 @@ YOUR_PROJECT_REPO_NAME
 └── bitwarden-directory-connector-containers   # <-- [git submodule]
 ```
 
-<!-- markdownlint-disable-next-line no-emphasis-as-heading -->
-_TODO: Add actual steps ([Issue #17])_
+### Adding bitwarden-directory-connector-containers as a submodule
+
+> [!TIP]
+> Please review [git submodule] documentation to ensure you have an
+understanding of how these work before continuing.
+
+The commands to add this project to your git project as a submodule would look
+something like this:
+
+```bash
+cd YOUR_PROJECT_REPO_NAME
+git submodule add https://github.com/hdub-tech/bitwarden-directory-connector-containers
+git commit -m "Add hdub-tech/bitwarden-directory-connector-containers as submodule"
+```
+
+### Setting submodule to a specific release
+
+> [!WARNING]
+> The following assumes you have already added the submodule to your project.
+
+When you add a submodule to your project, it will be locked to the commit you
+checked out. If you would like to lock it to a specific tag/release, you can do
+the following:
+
+```bash
+cd YOUR_PROJECT_REPO_NAME/bitwarden-directory-connector-containers
+git checkout v0.2.0  # Or your preferred tag
+cd ..
+git add bitwarden-directory-connector-containers
+git commit -m "Set bitwarden-directory-connector-containers to v0.2.0"
+```
 
 ## `defaults.conf` / `custom.conf`
 
@@ -102,7 +133,6 @@ corresponding `data.json` values, refer to the `jq` command in the
 [git submodule]:                    https://git-scm.com/book/en/v2/Git-Tools-Submodules
 [Google Workspace > Configure sync options]:    https://bitwarden.com/help/ldap-directory/#configure-sync-options
 [Google Workspace > Connect to your directory]: https://bitwarden.com/help/workspace-directory/#connect-to-your-directory
-[Issue #17]:                                    https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/17
 
 <!-- markdownlint-configure-file {
   MD033: false
