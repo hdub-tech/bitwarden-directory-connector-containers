@@ -48,7 +48,7 @@ EOM
 # 1: functionName, 2: numArgsActual, 3: numArgsExpected
 functionArgCheck() {
   if [ "${2}" -lt "${3}" ]; then
-    echo "${1} requires at least ${3} args"
+    message "${SCRIPT_NAME}" "ERROR" "${1} requires at least ${3} args"
     exit 4
   fi
 }
@@ -74,7 +74,7 @@ exportPodmanSecrets() {
       SECRET_KEY="$( uppercase "${psecret}" )"
       export "${SECRET_KEY}"="${SECRET_VALUE}"
     else
-      echo "${psecret} doesn't exist in podman local storage"
+      message "${SCRIPT_NAME}" "ERROR" "${psecret} doesn't exist in podman local storage"
       exit 5
     fi
   done
@@ -86,7 +86,7 @@ confirmEnvSecrets() {
 
   for env in "$@"; do
     if [ -z "${!env}" ]; then  # The ! allows Indirect Ref to env var
-      echo "SECRETS_MANAGER=env but ${env} not exported in this environment"
+      message "${SCRIPT_NAME}" "ERROR" "SECRETS_MANAGER=env but ${env} not exported in this environment"
       exit 6
     fi
   done
