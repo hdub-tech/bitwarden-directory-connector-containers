@@ -196,4 +196,5 @@ else
   [ -n "${CONFIG}" ] && config
   [ -n "${TEST}" ] && bwdcTest
   [ -n "${SYNC}" ] && bwdcSync
+  exit 0
 fi

@@ -20,11 +20,12 @@ USAGE_ERROR=255
 usage() {
   cat <<EOM
   USAGE:
-    ${SCRIPT_NAME} -c [-b BWDC_VERSION] [-n]
+    ${SCRIPT_NAME} -c [-b BWDC_VERSION] [-n] [-u]
 
    - -c is the Confirmation flag that you actually meant to execute the script
    - BWDC_VERSION (default=${DEFAULT_BWDC_VERSION}) is X.Y.Z format (no leading v!) and one of: https://github.com/bitwarden/directory-connector/releases
    - Use "-n" to build container image without cache (podman --no-cache)
+   - Use "-u" to view the How-to run bwdc-base usage
 
 EOM
 
@@ -35,9 +36,11 @@ EOM
 
 # Build common base image
 buildBase() {
+  # shellcheck disable=SC2153
   podman build ${NO_CACHE} \
     --build-arg BWDC_VERSION="${BWDC_VERSION}" \
     -t "${IMAGE_NAMESPACE}"/bwdc-base:"${BWDC_VERSION}" \
+    -t "${IMAGE_NAMESPACE}"/bwdc-base:"${BDCC_VERSION}" \
     -f Containerfile \
     || exit 1
 }
@@ -77,11 +80,15 @@ usageRun() {
 	EOM
 }
 
-while getopts "chb:n" opt; do
+while getopts "chub:n" opt; do
   case "${opt}" in
     "h" )
       # h = help
       usage "${USAGE_HELP}" ;;
+    "u" )
+      # u = usage run statement
+      USAGE_RUN=true
+      ;;
     "c" )
       # confirmed
       MAKE_IT_SO=true
@@ -96,9 +103,10 @@ while getopts "chb:n" opt; do
   esac
 done
 
-if [ -z "${MAKE_IT_SO}" ]; then
+if [ -z "${MAKE_IT_SO}" ] && [ -z "${USAGE_RUN}" ]; then
   usage 2
 else
-  buildBase
-  usageRun
+  [ -n "${MAKE_IT_SO}" ] && buildBase
+  [ -n "${USAGE_RUN}" ] && usageRun
+  exit 0
 fi
