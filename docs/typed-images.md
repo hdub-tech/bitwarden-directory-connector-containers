@@ -149,9 +149,9 @@ The [`build-typed-images.sh`] script will build one image per
 `$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE/*.conf` file, based on the option
 provided to the script. It is used under the hood by [`ci.sh`]. While `ci.sh`
 is the workhorse/recommended use case, this script is useful if you are just
-getting started testing this project to see if it works for your use case, and
-you haven't set-up your own project with this project as a submodule (Details:
-[Submodule set-up]). A summary of the script is provided below.
+getting started and are testing this project to see if it works for your use
+case, and you haven't set-up your own project with this project as a submodule
+(Details: [Submodule set-up]). A summary of the script is provided below.
 
 > [!WARNING]
 > Run this script with `-h` to see the most up to date usage statement.
@@ -163,7 +163,10 @@ you haven't set-up your own project with this project as a submodule (Details:
   directory, `podman build` is executed:
   * supplying the `.conf` file with `--build-arg-file`
   * supplying the secrets with `--secret`
-  * supplying the `BWDC_VERSION` and the name of the conf file with `--build-arg`
+  * supplying the `BWDC_VERSION` as either the desired version of `bwdc`
+    (default), or as the `BDCC_VERSION` if `USE_BDCC_VERSION_FOR_TYPED=true` in
+    `custom.conf`
+  * supplying the name of the conf file (`CONFNAME`) with `--build-arg`
   * tagging it as the `$IMAGE_NAMESPACE/bwdc-${BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE}-${CONF_NAME}:${BWDC_<TYPE>_IMAGE_VERSION}`
   * The Containerfile build process is described at [the top of this document]
 * A `podman run` usage statement is output, in case a user wants a quick way to

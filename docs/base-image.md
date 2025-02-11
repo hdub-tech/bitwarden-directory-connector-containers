@@ -60,7 +60,7 @@ Building the [`bwdc-base` image] is only required if:
 > [!NOTE]
 > This section is written _mostly_ from a contributor perspective.
 
-1. SET the desired `BWDC_VERSION` in...:
+1. SET the desired `BWDC_VERSION` and the `BDCC_VERSION` (active release) in...:
    - (_If you are a Contributor_): [`defaults.conf`]
    - (_For private use_): `custom.conf`
 2. EXECUTE [`build-base-image.sh`] with the `-c` argument to confirm you want to

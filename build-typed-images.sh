@@ -14,6 +14,7 @@ SUPPORTED_SECRETS_MANAGERS=( podman env )
 BWDC_VERSION=
 SECRETS_MANAGER=
 IMAGE_NAMESPACE=
+USE_BDCC_VERSION_FOR_TYPED=false
 # Source conf file with defaults
 # shellcheck disable=SC1091
 . "${SCRIPT_DIR}/defaults.conf"
@@ -194,6 +195,14 @@ else
   if ! arrayContains "${SUPPORTED_SECRETS_MANAGERS[*]}" "${SECRETS_MANAGER}"; then
     usage 2
   else
+    # For the folks who are very specific about when to pull in changes, they
+    # can lock bwdc-base to the bitwarden-directory-connector-containers
+    # Releases, which may occassionally rewrite tags *gasp*. I'm trying to
+    # balance convenience with security and it turns out, that is really
+    # difficult. You are shocked, I know.
+    # shellcheck disable=SC2153
+    [ -n "${USE_BDCC_VERSION_FOR_TYPED}" ] && "${USE_BDCC_VERSION_FOR_TYPED}" && BWDC_VERSION="${BDCC_VERSION}"
+
     case "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" in
       "gsuite" ) buildGsuite ;;
       * ) usage "${USAGE_ERROR}" ;;
