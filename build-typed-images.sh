@@ -32,11 +32,12 @@ USAGE_ERROR=255
 usage() {
   cat <<EOM
   USAGE:
-    ${SCRIPT_NAME} -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE [-n] [-r]
+    ${SCRIPT_NAME} -t BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE [-n] [-r] [-u]
 
    - BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE is one of: [${SUPPORTED_BWDC_SYNCS[*]}]
    - Use "-n" to build all container images without cache (podman --no-cache)
    - Use "-r" to rebuild the final run stage of the type specific container (allows you to test login)
+   - Use "-u" to view the How-to run bwdc-\$TYPE-\$CONFNAME usage
 
 EOM
 
@@ -134,19 +135,25 @@ buildGsuite() {
 # Convenient blurb to let you know how to run the container
 usageRun() {
   SECRETS="$( buildPodmanRunSecretsOptions )"
-
-  TYPE_VERSION="BWDC_${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE@U}_IMAGE_VERSION"
+  # In the event just the -u option was specified
+  if [ -z "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" ]; then
+    BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE="${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE:-\$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}"
+    TYPE_VERSION="\$TYPE_VERSION"
+  else
+    TYPE_VERSION="BWDC_${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE@U}_IMAGE_VERSION"
+    TYPE_VERSION="${!TYPE_VERSION}"
+  fi
   cat <<-EOM
 
 	===========================================================================
 	  To run the type-conf specific container non-interactively (update CONFNAME):
 
-	    podman run ${SECRETS} --rm ${IMAGE_NAMESPACE}/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${!TYPE_VERSION} [-c] [-t] [-s] [-h]
+	    podman run ${SECRETS} --rm ${IMAGE_NAMESPACE}/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${TYPE_VERSION} [-c] [-t] [-s] [-h]
 
 	----------------------------------------------------------------------------
 	  To run the type-conf specific container interactively (update CONFNAME):
 
-	    podman run ${SECRETS} -it --entrypoint bash --rm ${IMAGE_NAMESPACE}/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${!TYPE_VERSION}
+	    podman run ${SECRETS} -it --entrypoint bash --rm ${IMAGE_NAMESPACE}/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-CONFNAME:${TYPE_VERSION}
 
 	===========================================================================
 	EOM
@@ -163,11 +170,15 @@ arrayContains() {
   [[ " ${array[*]} " =~ [[:space:]]${search_item}[[:space:]] ]]
 }
 
-while getopts "ht:nr" opt; do
+while getopts "ht:nru" opt; do
   case "${opt}" in
     "h" )
       # h = help
       usage "${USAGE_HELP}"
+      ;;
+    "u" )
+      # u = usage run statement
+      USAGE_RUN=true
       ;;
     "t" )
       # t = type
@@ -189,25 +200,29 @@ while getopts "ht:nr" opt; do
   esac
 done
 
-if [ -z "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" ]; then
+if [ -z "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" ] && [ -z "${USAGE_RUN}" ]; then
   usage 3
 else
   if ! arrayContains "${SUPPORTED_SECRETS_MANAGERS[*]}" "${SECRETS_MANAGER}"; then
     usage 2
   else
-    # For the folks who are very specific about when to pull in changes, they
-    # can lock bwdc-base to the bitwarden-directory-connector-containers
-    # Releases, which may occassionally rewrite tags *gasp*. I'm trying to
-    # balance convenience with security and it turns out, that is really
-    # difficult. You are shocked, I know.
-    # shellcheck disable=SC2153
-    [ -n "${USE_BDCC_VERSION_FOR_TYPED}" ] && "${USE_BDCC_VERSION_FOR_TYPED}" && BWDC_VERSION="${BDCC_VERSION}"
+    # Adding this check to allow for just outputting usage below
+    if [ -n "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" ]; then
+      # For the folks who are very specific about when to pull in changes, they
+      # can lock bwdc-base to the bitwarden-directory-connector-containers
+      # Releases, which may occassionally rewrite tags *gasp*. I'm trying to
+      # balance convenience with security and it turns out, that is really
+      # difficult. You are shocked, I know.
+      # shellcheck disable=SC2153
+      [ -n "${USE_BDCC_VERSION_FOR_TYPED}" ] && "${USE_BDCC_VERSION_FOR_TYPED}" && BWDC_VERSION="${BDCC_VERSION}"
 
-    case "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" in
-      "gsuite" ) buildGsuite ;;
-      * ) usage "${USAGE_ERROR}" ;;
-    esac
+      case "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" in
+        "gsuite" ) buildGsuite ;;
+        * ) usage "${USAGE_ERROR}" ;;
+      esac
+    fi
 
-    usageRun
+    [ -n "${USAGE_RUN}" ] && usageRun
+    exit 0
   fi
 fi
