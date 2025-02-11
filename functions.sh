@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# $1 = script, $2 = level, $@ = message
+message() {
+  script=$1
+  shift
+  level=$1
+  shift
+  echo "[${script}] ${level}: $*"
+}
+
 buildPodmanRunSecretsOptions() {
   declare -a SECRETS_OPTS
   case "${SECRETS_MANAGER}" in

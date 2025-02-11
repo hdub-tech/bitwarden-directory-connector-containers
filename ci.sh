@@ -7,6 +7,8 @@ DEFAULT_PROJECT_CONFS_DIR="$( cd "${SCRIPT_DIR}/../" && pwd )"
 SUPPORTED_BWDC_TYPES=( gsuite )
 SUPPORTED_MODES=( config test sync )
 MINIMUM_PODMAN_VERSION="4.5.0"
+# shellcheck disable=SC1091
+. "${SCRIPT_DIR}"/functions.sh
 
 # Configurable args
 PROJECT_CONFS_DIR="${DEFAULT_PROJECT_CONFS_DIR}"
@@ -45,13 +47,6 @@ usage() {
       pre-reqs installed or systems which needed podman installed from source.
 EOM
   exit "${1}"
-}
-
-# $1 = level, $@ = message
-message() {
-  level=$1
-  shift
-  echo "[${SCRIPT_NAME}] ${level}: $*"
 }
 
 # Requirements: podman>=4.5.0
@@ -132,18 +127,18 @@ runContainers() {
 
   for type in "${SUPPORTED_BWDC_TYPES[@]}"; do
     if [ -d "${PROJECT_CONFS_DIR}/${type}" ]; then
-      message "INFO" "Running images of type [${type}]"
+      message "${SCRIPT_NAME}" "INFO" "Running images of type [${type}]"
       for conf in "${SCRIPT_DIR}/${type}"/*.conf; do
         conf_name="$( basename "${conf%.conf}" )"
         type_version="BWDC_${type@U}_IMAGE_VERSION"
         #TODO Add an error handler for this
         image_tag="$( grep "^${type_version}" "${conf}" | cut -d= -f2 )"
-        message "INFO" "Running conf [${conf_name}] version [${image_tag}] in mode [${MODE}]"
+        message "${SCRIPT_NAME}" "INFO" "Running conf [${conf_name}] version [${image_tag}] in mode [${MODE}]"
         # shellcheck disable=SC2086
         podman run --env-file "${SCRIPT_DIR}/${type}/env.vars" --rm "${IMAGE_NAMESPACE}/bwdc-${type}-${conf_name}":"${image_tag}" ${ENTRYPOINT_OPTS} || exit 10
       done
     else
-      message "INFO" "No images of type [${type}] in [${PROJECT_CONFS_DIR}]...skipping"
+      message "${SCRIPT_NAME}" "INFO" "No images of type [${type}] in [${PROJECT_CONFS_DIR}]...skipping"
     fi
   done
 }
@@ -156,7 +151,7 @@ while getopts "bp:r:sh" opt; do
       ;;
     "p" )
       # p = project dir
-      [ ! -d "${OPTARG}" ] && message "ERROR" "Directory does not exist: ${OPTARG}" && usage 8
+      [ ! -d "${OPTARG}" ] && message "${SCRIPT_NAME}" "ERROR" "Directory does not exist: ${OPTARG}" && usage 8
       PROJECT_CONFS_DIR=$( cd "${OPTARG}" && pwd )
       ;;
     "r" )
