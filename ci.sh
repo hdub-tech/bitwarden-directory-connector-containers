@@ -190,4 +190,6 @@ else
 
   # Run containers in MODE, if -r specified
   [ -n "${MODE}" ] && runContainers
+
+  exit 0
 fi
