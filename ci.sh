@@ -27,7 +27,7 @@ usage() {
 >>> (!) WARNING: THIS SCRIPT WILL INSTALL REQUIRED PACKAGES UNLESS RUN WITH -s (!) <<<
 
   USAGE:
-    ${0} -b|-r MODE [-p PROJECT_CONFS_DIR] [-s]
+    ${0} -b|-r MODE [-d PROJECT_CONFS_DIR] [-s]
 
   Where:
     * -b and/or -r MODE is specified.
@@ -143,14 +143,14 @@ runContainers() {
   done
 }
 
-while getopts "bp:r:sh" opt; do
+while getopts "bd:r:sh" opt; do
   case "${opt}" in
     "b" )
       # b = build typed images
       BUILD_TYPED_IMAGES="true"
       ;;
-    "p" )
-      # p = project dir
+    "d" )
+      # d = dir for project confs
       [ ! -d "${OPTARG}" ] && message "${SCRIPT_NAME}" "ERROR" "Directory does not exist: ${OPTARG}" && usage 8
       PROJECT_CONFS_DIR=$( cd "${OPTARG}" && pwd )
       ;;

@@ -131,14 +131,14 @@ version of the steps below.
       ```bash
       # EXAMPLE WHEN USED AS SUBMODULE
       # Use -h for all options with full descriptions
-      # USAGE: ci.sh [-b] [-r config|test|sync] [-p CONFS_DIR] [-s]
+      # USAGE: ci.sh [-b] [-r config|test|sync] [-d CONFS_DIR] [-s]
       ./bitwarden-directory-connector-containers/ci.sh -b -r test
       ```
       ```bash
       # EXAMPLE FROM THIS PROJECT'S DIRECTORY (no submodule):
       # Use -h for all options with full descriptions
-      # USAGE: ci.sh [-b] [-r config|test|sync] [-p CONFS_DIR] [-s]
-      ./ci.sh -p $PWD -b -r test
+      # USAGE: ci.sh [-b] [-r config|test|sync] [-d CONFS_DIR] [-s]
+      ./ci.sh -d $PWD -b -r test
       ```
     b. **_IF YOU ONLY WANT TO BUILD THE IMAGES OF ONE TYPE AND TEST BWDC
     LOGIN/LOGOUT_**: Run the [`build-typed-images.sh`] script once per

@@ -98,7 +98,7 @@ executed, if the options for that were specified.
 > [!WARNING]
 > The following commands are listed as if this project was a submodule of your
 project. Omit the leading `bitwarden-directory-connector-containers` directory
-and add the option `-p $PWD` if you are still playing around and have not gotten
+and add the option `-d $PWD` if you are still playing around and have not gotten
 to that stage yet.
 
 #### Build all images and run in test mode
