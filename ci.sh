@@ -192,6 +192,8 @@ runContainers() {
     "sync"   ) ENTRYPOINT_OPTS="-c -t -s" ;;
   esac
 
+  [ "localhost" != "${REGISTRY}" ] && podmanLogin
+
   for type in "${SUPPORTED_BWDC_TYPES[@]}"; do
     if [ -d "${PROJECT_CONFS_DIR}/${type}" ]; then
       message "${SCRIPT_NAME}" "INFO" "Running images of type [${type}]"
@@ -208,6 +210,11 @@ runContainers() {
       message "${SCRIPT_NAME}" "INFO" "No images of type [${type}] in [${PROJECT_CONFS_DIR}]...skipping"
     fi
   done
+
+  # NOTE: I'm aware this will not logout if podman run encounters an error.
+  # Rather than trying every image like I did with push, I'd rather exit to
+  # investigate. Risks are higher on run than push.
+  podmanLogout
 }
 
 while getopts "bpd:r:sh" opt; do
