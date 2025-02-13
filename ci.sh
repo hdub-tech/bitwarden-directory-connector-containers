@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Constants
+# Constants / Globals
 SCRIPT_DIR="$( cd "$( dirname "${0}" )" && pwd )"
 SCRIPT_NAME="$( basename "${0}" )"
 DEFAULT_PROJECT_CONFS_DIR="$( cd "${SCRIPT_DIR}/../" && pwd )"
@@ -9,6 +9,7 @@ SUPPORTED_MODES=( config test sync )
 MINIMUM_PODMAN_VERSION="4.5.0"
 # shellcheck disable=SC1091
 . "${SCRIPT_DIR}"/functions.sh
+CI_PODMAN_AUTHORIZED=
 
 # Configurable args
 PROJECT_CONFS_DIR="${DEFAULT_PROJECT_CONFS_DIR}"
@@ -17,6 +18,7 @@ PUSH_TYPED_IMAGES=
 MODE=
 SKIP_PREREQS=
 IMAGE_NAMESPACE=
+REGISTRY=
 
 usage() {
    cat <<EOM
@@ -122,27 +124,34 @@ buildImages() {
   podman image ls "${IMAGE_NAMESPACE}"/*
 }
 
+podmanLogin () {
+  # If not logged in, attempt to login to registry with env variables
+  if ! podman login --get-login "${REGISTRY}" &>/dev/null; then
+    message "${SCRIPT_NAME}" "WARN" "Not logged into ${REGISTRY}. Attempting login using \${REGISTRY_USER} and \${REGISTRY_PASSWORD} environment variables"
+
+    set +x  # Make extra sure no output
+    if [ -n "${REGISTRY_USER}" ] && [ -n "${REGISTRY_PASSWORD}" ]; then
+      echo "${REGISTRY_PASSWORD}" | podman login "$REGISTRY" --username "${REGISTRY_USER}" --password-stdin && CI_PODMAN_AUTHORIZED=true
+    fi
+
+    if ! podman login --get-login "${REGISTRY}" &>/dev/null; then
+      message "${SCRIPT_NAME}" "ERROR" "podman login failed. Please run podman login manually, or set REGISTRY_USER and REGISTRY_PASSWORD environment variables and re-run this script"
+      usage 9
+    fi
+  fi
+}
+
+# Logout, but only if this script was the one to login
+podmanLogout() {
+  [ -n "${CI_PODMAN_AUTHORIZED}" ] && podman logout "${REGISTRY}"
+}
+
 # Push all IMAGE_NAMESPACE/bwdc-* images to registry
 pushImages() {
-  registry="${IMAGE_NAMESPACE%/*}"
-  if [ "localhost" == "${registry}" ]; then
+  if [ "localhost" == "${REGISTRY}" ]; then
     message "${SCRIPT_NAME}" "WARN" "IMAGE_NAMESPACE is localhost - skipping push to registry!"
   else
-    ci_podman_auth=
-    # If not logged in, attempt to login to registry with env variables
-    if ! podman login --get-login "${registry}" &>/dev/null; then
-      message "${SCRIPT_NAME}" "WARN" "Not logged into ${registry}. Attempting login using \${REGISTRY_USER} and \${REGISTRY_PASSWORD} environment variables"
-
-      set +x  # Make extra sure no output
-      if [ -n "${REGISTRY_USER}" ] && [ -n "${REGISTRY_PASSWORD}" ]; then
-        echo "${REGISTRY_PASSWORD}" | podman login "$registry" --username "${REGISTRY_USER}" --password-stdin && ci_podman_auth=true
-      fi
-
-      if ! podman login --get-login "${registry}" &>/dev/null; then
-        message "${SCRIPT_NAME}" "ERROR" "podman login failed. Please run podman login manually, or set REGISTRY_USER and REGISTRY_PASSWORD environment variables and re-run this script"
-        usage 9
-      fi
-    fi
+    podmanLogin
 
     # Should be logged in, get all relevant images and push
     image_prefix="${IMAGE_NAMESPACE}"/bwdc
@@ -154,7 +163,7 @@ pushImages() {
         # if they are tagged from an image that DOES match the reference. This
         # prevents incidentals
         if [ "${bwdc_image#"$image_prefix"}" != "${bwdc_image}" ]; then
-          message "${SCRIPT_NAME}" "INFO" "Pushing [${bwdc_image}] to [$registry]"
+          message "${SCRIPT_NAME}" "INFO" "Pushing [${bwdc_image}] to [${REGISTRY}]"
 	  podman push "${bwdc_image}" || ci_push_failures+=("${bwdc_image} ")
         else
           message "${SCRIPT_NAME}" "WARN" "[${bwdc_image}] not prefixed with [${image_prefix}]...skipping push."
@@ -164,8 +173,7 @@ pushImages() {
       message "${SCRIPT_NAME}" "WARN" "No [${image_prefix}-*] images to push!"
     fi
 
-    # Always logout if we were the one to login
-    [ -n "${ci_podman_auth}" ] && podman logout "${registry}"
+    podmanLogout
 
     # Exit with error if we had push failures
     if [ "${#ci_push_failures}" -gt 0 ]; then
@@ -247,6 +255,7 @@ else
   . "${SCRIPT_DIR}"/defaults.conf
   # shellcheck disable=SC1091
   [ -e  "${SCRIPT_DIR}"/custom.conf ] && . "${SCRIPT_DIR}"/custom.conf
+  REGISTRY="${IMAGE_NAMESPACE%/*}"
 
   # Build typed images, if -b specified
   [ -n "${BUILD_TYPED_IMAGES}" ] && buildImages
