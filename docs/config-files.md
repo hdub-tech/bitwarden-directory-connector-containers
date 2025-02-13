@@ -78,6 +78,10 @@ advanced users and includes a description of the variables contained within
 and where/how they are used.
 
 > [!WARNING]
+> If you plan to push images to a registry, you must set `IMAGE_NAMESPACE`
+to match your registry in `custom.conf`!
+<!-- markdownlint-disable-next-line no-blanks-blockquote -->
+> [!WARNING]
 > Do not edit `defaults.conf` directly! Instead, COPY `defaults.conf` to
 `custom.conf` and update that file.
 
@@ -87,7 +91,7 @@ and where/how they are used.
 | `BDCC_VERSION` | X.Y.Z | Building typed images: <UL><LI>[Any tag for this project] (no leading 'v')</LI></UL>Building `bwdc-base` image<UL><LI>Follow [Semantic versioning]</LI></UL> | This is for: <UL><LI> Maintainers to tag and release `bwdc-base` tied to the Github project release version</LI><LI>Users who are uncomfortable with image tags being rewritten (Again, I get it, I am you). See also `USE_BDCC_VERSION_FOR_TYPED`</LI></UL> |
 | `USE_BDCC_VERSION_FOR_TYPED` | Boolean | <UL><LI>false (default)</LI><LI>true</LI></UL> | Set this to `true` if you want to pull the `bwdc-base` image using the `BDCC_VERSION` tag instead of the `BWDC_VERSION` tag when running [`build-typed-images.sh`].<BR><BR>I initially designed the tagging of `bwdc-base` with simplicity and convenience in mind - users would only need to know the version of `bwdc` they cared about, and that would be the tag. However, when I found [the first real bug], I realized I would have to republish the `bwdc-base` image, and if I tagged only on the version of `bwdc`, I would be overwriting an existing tagged image. Being a security minded person myself, I knew I would HATE being on the receiving end of that without at least an OPTION to control it. In my defense, I was additionally tagging `bwdc-base` with the git ref, but I didn't implement any way for users to utilize that, plus a sha isn't exactly a user friendly format. So tagging based on the release and adding this boolean is the best I could come up with on short notice. |
 | `SECRETS_MANAGER` | String | <UL><LI>env</LI><LI>~podman~</LI></UL> | When running [`build-typed-images.sh`] or [`ci.sh`]`-r MODE`, this specifies how you are managing the secrets which will be used when the container is run (See [managing-secrets.md] for details). |
-| `IMAGE_NAMESPACE` | [REGISTRY/]NAMESPACE | Examples: <LI>ghcr.io/hdub-tech</LI><LI>docker.io/orgname</LI><LI>orgname (registry defaults to localhost)</LI> | The namespace (optionally with registry) of the [`build-typed-images.sh`] / [`ci.sh`]`-b` generated images.<BR>NO IMAGES ARE PUSHED IN ANY OF THESE SCRIPTS, so this is for local tagging purposes only (See [typed-images.md] for details). |
+| `IMAGE_NAMESPACE` | REGISTRY/NAMESPACE | Examples: <LI>ghcr.io/hdub-tech</LI><LI>docker.io/orgname</LI><LI>localhost/orgname</LI> | The registry/namespace of the [`build-typed-images.sh`] / [`ci.sh`]`[-b\|-p]` generated/pushed images.<BR>Images are ONLY pushed with the `-p` option on `ci.sh`(See [typed-images.md] for details). |
 
 ## `$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/argfile.conf.template`
 
