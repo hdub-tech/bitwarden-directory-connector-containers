@@ -1,0 +1,32 @@
+name: Build and Push All Typed Images
+description: Build and push all bwdc-$TYPE-$CONFNAME images
+
+env:
+  # The following two should work as is for pushing to ghcr.io
+  REGISTRY_USER: ${{ github.actor }}
+  REGISTRY_PASSWORD: ${{ github.token }}
+  # Use and update the following for other registries
+  #REGISTRY_USER: ${{ secrets.IMAGE_REGISTRY_USER }}
+  #REGISTRY_PASSWORD: ${{ secrets.IMAGE_REGISTRY_PASSWORD }}
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-push-bwdc-typed:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check-out repository under $GITHUB_WORKSPACE
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  #v4.2.2
+        with:
+          submodules: true
+
+      - name: Build and push all typed images using ci.sh
+        env:
+          BW_CLIENTID: ${{ secrets.BW_CLIENTID }}
+          BW_CLIENTSECRET: ${{ secrets.BW_CLIENTSECRET }}
+        run: $GITHUB_WORKSPACE/bitwarden-directory-connector-containers/ci.sh -b -p
