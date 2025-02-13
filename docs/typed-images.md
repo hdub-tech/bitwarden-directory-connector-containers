@@ -40,13 +40,13 @@ a [git submodule]. Please see [config-files.md] for details.
 
 ## Table of Contents
 
-* [Building AND running (`ci.sh`)](#building-and-running-cish)
+* [Building, pushing AND running (`ci.sh`)](#building-pushing-and-running-cish)
   * [Examples](#examples)
     * [WARNING](#warning)
     * [Build all images and run in test mode](#build-all-images-and-run-in-test-mode)
     * [Build all images and run in sync mode](#build-all-images-and-run-in-sync-mode)
     * [Run all containers in sync mode without building images or installing pre-requisites](#run-all-containers-in-sync-mode-without-building-images-or-installing-pre-requisites)
-    * [Only build all images](#only-build-all-images)
+    * [Only build and push all images](#only-build-and-push-all-images)
 * [Building](#building)
   * [build-typed-images.sh](#build-typed-imagessh)
     * [Examples](#examples-1)
@@ -58,15 +58,15 @@ a [git submodule]. Please see [config-files.md] for details.
   * [ci.sh](#cish)
   * [podman run](#podman-run)
 
-## Building AND running (`ci.sh`)
+## Building, pushing AND running (`ci.sh`)
 
 > [!TIP]
 > This is the ultimate and recommended way to use this project.
 
 The [`ci.sh`] was designed to be the only command a CI system needs to execute.
 It will verify dependencies are present and the necessary version and **_build
-and run_** all typed images, depending on the options sent to the script. A
-summary of the script is provided below.
+and/or push and/or run_** all typed images, depending on the options sent to the
+script. A summary of the script is provided below.
 
 > [!NOTE]
 > **_Building_** an image will result in `bwdc login` and `bwdc logout`
@@ -84,6 +84,7 @@ executed, if the options for that were specified.
 * Pulls in [`defaults.conf`], and then `custom.conf` for any overrides.
 * Builds all images for all configuration files for all supported Directory
   Connector types, if `-b` was specified.
+* Pushes all images to `IMAGE_NAMESPACE` if `-p` was specified.
 * Runs all containers in the specified `MODE`, if `-r MODE` was specified, where
   `MODE` is one of:
   * `config`: Runs each container, finishing the necessary configuration using
@@ -131,14 +132,20 @@ is too old).
 ./bitwarden-directory-connector-containers/ci.sh -s -r sync
 ```
 
-#### Only build all images
+#### Only build and push all images
 
 This is useful if you want to push the images to your own container registry so
 you can take advantage of the previous example, which will speed up runtimes.
 
+> [!CAUTION]
+> Ensure `IMAGE_NAMESPACE` is set to your registry/namespace in `custom.conf`!
+>
+> You must run `podman login` first OR export `REGISTRY_USER` and
+`REGISTRY_PASSWORD` in order for push to work.
+
 ```bash
-# ONLY build all images
-./bitwarden-directory-connector-containers/ci.sh -s -b
+# ONLY build and push all images
+./bitwarden-directory-connector-containers/ci.sh -s -b -p
 ```
 
 ## Building
@@ -212,7 +219,7 @@ statement at the top of the corresponding Containerfile.
 
 ### ci.sh
 
-Refer to the [Run all containers] example in the [Building and running
+Refer to the [Run all containers] example in the [Building, pushing and running
 (`ci.sh`)] section.
 
 ### podman run
@@ -223,7 +230,7 @@ at the top of the corresponding Containerfile.
 * [`gsuite/Containerfile`]
 
 <!-- Links -->
-[Building AND running (`ci.sh`)]: #building-and-running-cish
+[Building, pushing AND running (`ci.sh`)]: #building-pushing-and-running-cish
 [the top of this document]:       #typed-images
 [Run all containers]:             #run-all-containers-in-sync-mode-without-building-images-or-installing-pre-requisites
 [`bwdc-base`]:                   ./base-image.md

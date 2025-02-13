@@ -36,6 +36,7 @@ free to open an issue if you are interested in seeing that feature.
    | `BW_CLIENTID` | All | - [`build-typed-images.sh`]<BR>- [`ci.sh`]<BR>- `podman run hdub-tech/bwdc-base` <BR>- `podman run bwdc-$TYPE-$CONF` | Format: `organization.UUID`<BR>Found in [Bitwarden Admin Console]. |
    | `BW_CLIENTSECRET` | All | - [`build-typed-images.sh`]<BR>- [`ci.sh`]<BR>- `podman run hdub-tech/bwdc-base`<BR>- `podman run bwdc-$TYPE-$CONF`  | Format: alphanumeric<BR>Found in [Bitwarden Admin Console]. |
    | `BW_GSUITEKEY` | Gsuite | - [`ci.sh`]<BR>- `podman run bwdc-$TYPE-$CONF` | Format (ONE new line at the end): `-----BEGIN PRIVATE KEY-----\nMIIEvalueofGSuitePrivatekey\n-----END PRIVATE KEY-----\n`<BR>Found in the GCP Console json formatted key for your [GCP service account]. |
+   | `REGISTRY_USER`<BR>`REGISTRY_PASSWORD` | All | - [`ci.sh`]`-p` | Export these variables if you plan on pushing images to your container registry using the `ci.sh` script WITHOUT running `podman login` first. The script will login for you using the values in these variables. |
 
 ## Podman secrets
 
