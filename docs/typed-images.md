@@ -2,7 +2,7 @@
 
 "Typed images" refer to the images which are built off [`bwdc-base`] and are
 specific to a Directory Connector type (also referred to as
-`$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE`) and a config file (which would map to
+`$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE`) and a config file (which would map to
 a `data.json` file in Bitwarden Directory Connector). These containers are the
 primary purpose/use case for this project.
 
@@ -14,7 +14,7 @@ files which are expected to be in the format of the type specific template
 Typed image Containerfiles all follow the same basic format:
 
 * Pull `FROM` [ghcr.io/hdub-tech/bwdc-base:$BWDC_VERSION].
-* Export the `BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE`.
+* Export the `BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE`.
 * Set various OCI labels/
 * Uses a non-privileged `bitwarden` user to:
   * Copy a `sync.json` file with the type specific sync settings (to be used in
@@ -40,13 +40,13 @@ a [git submodule]. Please see [config-files.md] for details.
 
 ## Table of Contents
 
-* [Building AND running (`ci.sh`)](#building-and-running-cish)
+* [Building, pushing AND running (`ci.sh`)](#building-pushing-and-running-cish)
   * [Examples](#examples)
     * [WARNING](#warning)
     * [Build all images and run in test mode](#build-all-images-and-run-in-test-mode)
     * [Build all images and run in sync mode](#build-all-images-and-run-in-sync-mode)
     * [Run all containers in sync mode without building images or installing pre-requisites](#run-all-containers-in-sync-mode-without-building-images-or-installing-pre-requisites)
-    * [Only build all images](#only-build-all-images)
+    * [Only build and push all images](#only-build-and-push-all-images)
 * [Building](#building)
   * [build-typed-images.sh](#build-typed-imagessh)
     * [Examples](#examples-1)
@@ -58,15 +58,15 @@ a [git submodule]. Please see [config-files.md] for details.
   * [ci.sh](#cish)
   * [podman run](#podman-run)
 
-## Building AND running (`ci.sh`)
+## Building, pushing AND running (`ci.sh`)
 
 > [!TIP]
 > This is the ultimate and recommended way to use this project.
 
 The [`ci.sh`] was designed to be the only command a CI system needs to execute.
 It will verify dependencies are present and the necessary version and **_build
-and run_** all typed images, depending on the options sent to the script. A
-summary of the script is provided below.
+and/or push and/or run_** all typed images, depending on the options sent to the
+script. A summary of the script is provided below.
 
 > [!NOTE]
 > **_Building_** an image will result in `bwdc login` and `bwdc logout`
@@ -84,6 +84,7 @@ executed, if the options for that were specified.
 * Pulls in [`defaults.conf`], and then `custom.conf` for any overrides.
 * Builds all images for all configuration files for all supported Directory
   Connector types, if `-b` was specified.
+* Pushes all images to `IMAGE_NAMESPACE` if `-p` was specified.
 * Runs all containers in the specified `MODE`, if `-r MODE` was specified, where
   `MODE` is one of:
   * `config`: Runs each container, finishing the necessary configuration using
@@ -98,7 +99,7 @@ executed, if the options for that were specified.
 > [!WARNING]
 > The following commands are listed as if this project was a submodule of your
 project. Omit the leading `bitwarden-directory-connector-containers` directory
-and add the option `-p $PWD` if you are still playing around and have not gotten
+and add the option `-d $PWD` if you are still playing around and have not gotten
 to that stage yet.
 
 #### Build all images and run in test mode
@@ -131,14 +132,20 @@ is too old).
 ./bitwarden-directory-connector-containers/ci.sh -s -r sync
 ```
 
-#### Only build all images
+#### Only build and push all images
 
 This is useful if you want to push the images to your own container registry so
 you can take advantage of the previous example, which will speed up runtimes.
 
+> [!CAUTION]
+> Ensure `IMAGE_NAMESPACE` is set to your registry/namespace in `custom.conf`!
+>
+> You must run `podman login` first OR export `REGISTRY_USER` and
+`REGISTRY_PASSWORD` in order for push to work.
+
 ```bash
-# ONLY build all images
-./bitwarden-directory-connector-containers/ci.sh -s -b
+# ONLY build and push all images
+./bitwarden-directory-connector-containers/ci.sh -s -b -p
 ```
 
 ## Building
@@ -146,7 +153,7 @@ you can take advantage of the previous example, which will speed up runtimes.
 ### build-typed-images.sh
 
 The [`build-typed-images.sh`] script will build one image per
-`$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE/*.conf` file, based on the option
+`$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/*.conf` file, based on the option
 provided to the script. It is used under the hood by [`ci.sh`]. While `ci.sh`
 is the workhorse/recommended use case, this script is useful if you are just
 getting started and are testing this project to see if it works for your use
@@ -159,7 +166,7 @@ case, and you haven't set-up your own project with this project as a submodule
 * Script confirms the appropriate secrets are available (`BW_CLIENTID` and
   `BW_CLIENTSECRET`), based on the `SECRETS_MANAGER` setting in
   [`defaults.conf`]/`custom.conf`
-* For each `*.conf` file in the `$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE`
+* For each `*.conf` file in the `$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE`
   directory, `podman build` is executed:
   * supplying the `.conf` file with `--build-arg-file`
   * supplying the secrets with `--secret`
@@ -167,7 +174,7 @@ case, and you haven't set-up your own project with this project as a submodule
     (default), or as the `BDCC_VERSION` if `USE_BDCC_VERSION_FOR_TYPED=true` in
     `custom.conf`
   * supplying the name of the conf file (`CONFNAME`) with `--build-arg`
-  * tagging it as the `$IMAGE_NAMESPACE/bwdc-${BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE}-${CONF_NAME}:${BWDC_<TYPE>_IMAGE_VERSION}`
+  * tagging it as the `$IMAGE_NAMESPACE/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-${CONF_NAME}:${BWDC_<TYPE>_IMAGE_VERSION}`
   * The Containerfile build process is described at [the top of this document]
 * A `podman run` usage statement is output, in case a user wants a quick way to
   see how to use the generated image.
@@ -212,7 +219,7 @@ statement at the top of the corresponding Containerfile.
 
 ### ci.sh
 
-Refer to the [Run all containers] example in the [Building and running
+Refer to the [Run all containers] example in the [Building, pushing and running
 (`ci.sh`)] section.
 
 ### podman run
@@ -223,7 +230,7 @@ at the top of the corresponding Containerfile.
 * [`gsuite/Containerfile`]
 
 <!-- Links -->
-[Building AND running (`ci.sh`)]: #building-and-running-cish
+[Building, pushing AND running (`ci.sh`)]: #building-pushing-and-running-cish
 [the top of this document]:       #typed-images
 [Run all containers]:             #run-all-containers-in-sync-mode-without-building-images-or-installing-pre-requisites
 [`bwdc-base`]:                   ./base-image.md
