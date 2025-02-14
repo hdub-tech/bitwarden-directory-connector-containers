@@ -2,7 +2,7 @@
 
 "Typed images" refer to the images which are built off [`bwdc-base`] and are
 specific to a Directory Connector type (also referred to as
-`$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE`) and a config file (which would map to
+`$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE`) and a config file (which would map to
 a `data.json` file in Bitwarden Directory Connector). These containers are the
 primary purpose/use case for this project.
 
@@ -14,7 +14,7 @@ files which are expected to be in the format of the type specific template
 Typed image Containerfiles all follow the same basic format:
 
 * Pull `FROM` [ghcr.io/hdub-tech/bwdc-base:$BWDC_VERSION].
-* Export the `BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE`.
+* Export the `BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE`.
 * Set various OCI labels/
 * Uses a non-privileged `bitwarden` user to:
   * Copy a `sync.json` file with the type specific sync settings (to be used in
@@ -153,7 +153,7 @@ you can take advantage of the previous example, which will speed up runtimes.
 ### build-typed-images.sh
 
 The [`build-typed-images.sh`] script will build one image per
-`$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE/*.conf` file, based on the option
+`$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/*.conf` file, based on the option
 provided to the script. It is used under the hood by [`ci.sh`]. While `ci.sh`
 is the workhorse/recommended use case, this script is useful if you are just
 getting started and are testing this project to see if it works for your use
@@ -166,7 +166,7 @@ case, and you haven't set-up your own project with this project as a submodule
 * Script confirms the appropriate secrets are available (`BW_CLIENTID` and
   `BW_CLIENTSECRET`), based on the `SECRETS_MANAGER` setting in
   [`defaults.conf`]/`custom.conf`
-* For each `*.conf` file in the `$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE`
+* For each `*.conf` file in the `$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE`
   directory, `podman build` is executed:
   * supplying the `.conf` file with `--build-arg-file`
   * supplying the secrets with `--secret`
@@ -174,7 +174,7 @@ case, and you haven't set-up your own project with this project as a submodule
     (default), or as the `BDCC_VERSION` if `USE_BDCC_VERSION_FOR_TYPED=true` in
     `custom.conf`
   * supplying the name of the conf file (`CONFNAME`) with `--build-arg`
-  * tagging it as the `$IMAGE_NAMESPACE/bwdc-${BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE}-${CONF_NAME}:${BWDC_<TYPE>_IMAGE_VERSION}`
+  * tagging it as the `$IMAGE_NAMESPACE/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-${CONF_NAME}:${BWDC_<TYPE>_IMAGE_VERSION}`
   * The Containerfile build process is described at [the top of this document]
 * A `podman run` usage statement is output, in case a user wants a quick way to
   see how to use the generated image.

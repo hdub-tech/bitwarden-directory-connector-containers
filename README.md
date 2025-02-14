@@ -16,7 +16,7 @@ This project has two sets of container images:
   the [Github packages for this project] (See [base-image.md] for details).
 * The "typed images", which are built off of [`bwdc-base`] and is specific to a
   Directory Connector type, often abbreviated here as
-  `$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE` (See [typed-images.md] for details).
+  `$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE` (See [typed-images.md] for details).
 
 > [!NOTE]
 > Project currently only supports the Gsuite directory connector type for the
@@ -53,7 +53,7 @@ related to, files they depend on and links to documentation that explain them.
 | --- | --- | --- | --- |
 | Build the `bwdc-base` image, which is the root of the rest of the containers. Published by @hdub-tech to [GitHub packages for this project]. | [`build-base-image.sh`] | - [`Containerfile`]<BR>- [`defaults.conf`] / `custom.conf`<BR>- [`build-push-base.yml`] | [base-image.md] |
 | The [`ENTRYPOINT`] of the `bwdc-base` image, and therefore all typed images built off of it. | [`entrypoint.sh`] | N/A | [base-image.md] |
-| Build per-configuration file images, one type per run, optionally without using the podman cache and optionally testing login even if the image was already built. | [`build-typed-images.sh`] | - [`defaults.conf`] / `custom.conf`<BR>- `$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE/Containerfile` ([`gsuite` Containerfile], as an example)<BR>- `$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE/$CONFNAME.conf` ([`gsuite` argfile template], as an example) | - [config-files.md]<BR>- [managing-secrets.md]<BR>- [typed-images.md] |
+| Build per-configuration file images, one type per run, optionally without using the podman cache and optionally testing login even if the image was already built. | [`build-typed-images.sh`] | - [`defaults.conf`] / `custom.conf`<BR>- `$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/Containerfile` ([`gsuite` Containerfile], as an example)<BR>- `$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/$CONFNAME.conf` ([`gsuite` argfile template], as an example) | - [config-files.md]<BR>- [managing-secrets.md]<BR>- [typed-images.md] |
 | Install/verify dependencies (optional), build all images of all types (EXCEPT the bwdc-base) and/or push and/or run all the images. | [`ci.sh`] | - [`defaults.conf`] / `custom.conf`<BR>- `*/Containerfile` ([`gsuite` Containerfile], as an example)<BR>- `*/$CONFNAME.conf` ([`gsuite` argfile template], as an example) | - [config-files.md]<BR>- [typed-images.md] |
 | Utility functions used by other scripts | [`functions.sh`] | N/A | N/A |
 
@@ -90,8 +90,8 @@ version of the steps below.
    cp defaults.conf custom.conf
    ```
 
-2. Copy the `$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE/argfile.conf.template` to
-   `$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE/$DESCRIPTIVE_NAME.conf` and update
+2. Copy the `$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/argfile.conf.template` to
+   `$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/$DESCRIPTIVE_NAME.conf` and update
    the conf file for your sync needs. This template contains detailed comments
    on what and how to update. (Detailed documentation at [config-files.md]). Do
    this once per sync profile / data.json file.
@@ -108,7 +108,7 @@ version of the steps below.
    ```
 
 3. Export your `BW_CLIENTID` and `BW_CLIENTSECRET`, as well as any type specific
-   secrets specified in `$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE/env.vars`
+   secrets specified in `$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/env.vars`
    ([`gsuite` env sample]) (Detailed documentation: [managing-secrets.md]).
    ```bash
    # EXAMPLE (disabling history for commands with leading spaces, then issue exports with a leading space)
@@ -142,7 +142,7 @@ version of the steps below.
       ```
     b. **_IF YOU ONLY WANT TO BUILD THE IMAGES OF ONE TYPE AND TEST BWDC
     LOGIN/LOGOUT_**: Run the [`build-typed-images.sh`] script once per
-    `$BITWARDENCLI_DIRECTORY_CONNECTOR_TYPE`, to build one image per config
+    `$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE`, to build one image per config
     file and run `bwdc login` and `bwdc logout`, which is necesary for the
     build image process. No secrets will be stored to disk or in the
     environment of the produced image (Detailed documentation:
