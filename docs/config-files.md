@@ -30,11 +30,15 @@ for your project should be as follows:
 ```bash
 YOUR_PROJECT_REPO_NAME
 ├── custom.conf
-├── gsuite
+├── gsuite/
 │   ├── administration.conf
 │   ├── sales.conf
 │   └──  ...
-└── bitwarden-directory-connector-containers   # <-- [git submodule]
+├── .github/workflows/  # Copy from this project's .github/workflows/samples
+|   ├── build-all-typed-images.yml
+|   ├── build-and-push-all-typed-images.yml
+|   └── run-all-typed-images.yml
+└── bitwarden-directory-connector-containers/   # <-- [git submodule]
 ```
 
 ### Adding bitwarden-directory-connector-containers as a submodule

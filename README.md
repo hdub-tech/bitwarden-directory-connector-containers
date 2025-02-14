@@ -153,6 +153,14 @@ version of the steps below.
       ./build-typed-images.sh -t gsuite
       ```
 
+5. Copy the desired workflows to use in your superproject (Detailed
+   [sample workflows documentation]):
+   ```bash
+   # From $YOUR_PROJECT_REPO, where bitwarden-directory-connector-containers is a submodule
+   mkdir --parents .github/workflows
+   cp ./bitwarden-directory-connector-containers/.github/workflows/samples/*.yml ./.github/workflows/
+   ```
+
 ## License(s)
 
 * [This project's license] (GNU GPL Version 3)
@@ -210,6 +218,7 @@ Please see the [SECURITY.md] guide for details.
 [licenses]:                         ./licenses/
 [SECURITY.md]:                      ./docs/SECURITY.md
 [managing-secrets.md]:              ./docs/managing-secrets.md
+[sample workflows documentation]:   ./.github/workflows/samples/README.md
 [This project's license]:           ./LICENSE
 [typed-images.md]:                  ./docs/typed-images.md
 [`bwdc`]:                           https://bitwarden.com/help/directory-sync-cli
