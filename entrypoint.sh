@@ -22,11 +22,11 @@ usage() {
     ${SCRIPT_NAME} [-c] [-t] [-s] [-h]
 
   Where at least one of the following is required:
-    * -c: (aka config) - Configures data.json with env var secrets. (Use this
+    * -c: (aka config) - Configures data.json with env var secrets (Use this
                          option when using the config file method, or the BYO
                          data.json method and the data.json does not contain
                          secrets. Omit this option if using your own data.json
-                         and it already has the secrets populated)
+                         and it already has the secrets populated).
     * -t: (aka test)   - Runs "bwdc test", with bwdc login if necessary, and
                          bwdc logout when completed (even if error).
     * -s: (aka sync)   - Runs "bwdc sync", with bwdc login if necessary, and
@@ -82,7 +82,7 @@ logout() {
 
 preReqs() {
   # Make sure we have bwdc for all modes
-  if which bwdc; then
+  if which bwdc &>/dev/null; then
     BW_DATAFILE="$( bwdc data-file 2>/dev/null )"
   
     # Make sure Client Id and Secret set in env vars for login
@@ -150,7 +150,7 @@ config() {
 
 bwdcTest() {
   login
-  bwdc test || test_failed=true
+  bwdc test --pretty || test_failed=true
   # Always logout
   logout
 

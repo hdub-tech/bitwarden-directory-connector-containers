@@ -39,8 +39,3 @@ declined, etc.
 <!-- Links -->
 [Issue #13]:     https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/13
 [open an issue]: https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/new/choose
-
-<!-- markdownlint-configure-file {
-  MD033: false
-}
--->

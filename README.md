@@ -223,7 +223,7 @@ Please see the [SECURITY.md] guide for details.
 [typed-images.md]:                  ./docs/typed-images.md
 [`bwdc`]:                           https://bitwarden.com/help/directory-sync-cli
 [Directory Connector]:              https://github.com/bitwarden/directory-connector
-[`directory-connector` issues]:     https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues?q=is%3Aissue%20state%3Aopen%20label%3Adirectory-connector
+[`directory-connector` issues]:     https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22Component%3A%20directory-connector%22
 [Discussions]:                      https://github.com/hdub-tech/bitwarden-directory-connector-containers/discussions
 [`ENTRYPOINT`]:                     https://docs.podman.io/en/latest/markdown/podman-run.1.html#entrypoint-command-command-arg1
 [GitHub packages for this project]: https://github.com/users/hdub-tech/packages?repo_name=bitwarden-directory-connector-containers
@@ -236,6 +236,5 @@ Please see the [SECURITY.md] guide for details.
   MD013: {
     code_blocks: false
   },
-  MD033: false
 }
 -->

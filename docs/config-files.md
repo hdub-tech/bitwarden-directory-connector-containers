@@ -149,8 +149,3 @@ corresponding `data.json` values, refer to the `jq` command in the
 [Google Workspace > Connect to your directory]: https://bitwarden.com/help/workspace-directory/#connect-to-your-directory
 [Semantic versioning]:                          https://semver.org
 [the first real bug]:                           https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/27
-
-<!-- markdownlint-configure-file {
-  MD033: false
-}
--->
