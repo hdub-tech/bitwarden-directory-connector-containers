@@ -236,6 +236,5 @@ Please see the [SECURITY.md] guide for details.
   MD013: {
     code_blocks: false
   },
-  MD033: false
 }
 -->

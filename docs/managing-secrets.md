@@ -78,6 +78,5 @@ full details on how I got in this pickle.
   MD013: {
     code_blocks: false
   },
-  MD033: false
 }
 -->
