@@ -150,7 +150,7 @@ config() {
 
 bwdcTest() {
   login
-  bwdc test || test_failed=true
+  bwdc test --pretty || test_failed=true
   # Always logout
   logout
 
