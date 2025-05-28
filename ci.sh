@@ -192,8 +192,6 @@ runContainers() {
     "sync"   ) ENTRYPOINT_OPTS="-c -t -s" ;;
   esac
 
-  [ "localhost" != "${REGISTRY}" ] && podmanLogin
-
   for type in "${SUPPORTED_BWDC_TYPES[@]}"; do
     if [ -d "${PROJECT_CONFS_DIR}/${type}" ]; then
       message "${SCRIPT_NAME}" "INFO" "Running images of type [${type}]"
@@ -202,9 +200,15 @@ runContainers() {
         type_version="BWDC_${type@U}_IMAGE_VERSION"
         #TODO Add an error handler for this
         image_tag="$( grep "^${type_version}" "${conf}" | cut -d= -f2 )"
+        image_name_and_tag="${IMAGE_NAMESPACE}/bwdc-${type}-${conf_name}":"${image_tag}"
+
+        # Hack to only login to registry if we cannot access the image locally
+        message "${SCRIPT_NAME}" "INFO" "Inspecting image [${image_name_and_tag}] and running podman login if failed"
+        podman image inspect "${image_name_and_tag}" 1>/dev/null || podmanLogin
+
         message "${SCRIPT_NAME}" "INFO" "Running conf [${conf_name}] version [${image_tag}] in mode [${MODE}]"
         # shellcheck disable=SC2086
-        podman run --env-file "${SCRIPT_DIR}/${type}/env.vars" --rm "${IMAGE_NAMESPACE}/bwdc-${type}-${conf_name}":"${image_tag}" ${ENTRYPOINT_OPTS} || exit 10
+        podman run --env-file "${SCRIPT_DIR}/${type}/env.vars" --rm ${image_name_and_tag} ${ENTRYPOINT_OPTS} || exit 10
       done
     else
       message "${SCRIPT_NAME}" "INFO" "No images of type [${type}] in [${PROJECT_CONFS_DIR}]...skipping"
