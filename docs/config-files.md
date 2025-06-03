@@ -67,10 +67,11 @@ the following:
 
 ```bash
 cd YOUR_PROJECT_REPO_NAME/bitwarden-directory-connector-containers
-git checkout v0.2.0  # Or your preferred tag
+git fetch  # To fetch new tags/branches
+git checkout v1.2.0  # Or your preferred tag
 cd ..
 git add bitwarden-directory-connector-containers
-git commit -m "Set bitwarden-directory-connector-containers to v0.2.0"
+git commit -m "Set bitwarden-directory-connector-containers to v1.2.0"
 ```
 
 ## `defaults.conf` / `custom.conf`
@@ -91,7 +92,7 @@ to match your registry in `custom.conf`!
 
 | Variable | Format | Options | Description of use |
 | --- | --- | --- | --- |
-| `BWDC_VERSION` | YYYY.MM.N | Building typed images:<UL><LI>2024.10.0</LI><LI>2025.01.0</LI></UL>Building `bwdc-base` image:<UL><LI>[Any released Directory Connector] version (no leading 'v')</LI></UL> | <LI>When running [`build-base-image.sh`], this variable specifies which version of `bwdc` to download to the [`bwdc-base` image] (See [base-image.md] for details).</LI><LI>When running [`build-typed-images.sh`] or [`ci.sh`]`-b`, this specifies which version of `ghcr.io/hdub-tech/bwdc-base` (_See Issue #15_) to pull FROM in the typed container (See [typed-images.md] for details).</LI> |
+| `BWDC_VERSION` | YYYY.M.N | Building typed images (general users):<UL><LI>2024.10.0</LI><LI>2025.1.0</LI><LI>2025.5.0</LI></UL>Building `bwdc-base` image (maintainers/power users):<UL><LI>[Any released Directory Connector] version (no leading 'v')</LI></UL> | <LI>When running [`build-typed-images.sh`] or [`ci.sh`]`-b`, this specifies which version of `ghcr.io/hdub-tech/bwdc-base` (_See Issue #15_) to pull `FROM` in the typed container (See [typed-images.md] for details).</LI><LI>When running [`build-base-image.sh`], this variable specifies which version of `bwdc` to download to the [`bwdc-base` image] (See [base-image.md] for details).</LI> |
 | `BDCC_VERSION` | X.Y.Z | Building typed images: <UL><LI>[Any tag for this project] (no leading 'v')</LI></UL>Building `bwdc-base` image<UL><LI>Follow [Semantic versioning]</LI></UL> | This is for: <UL><LI> Maintainers to tag and release `bwdc-base` tied to the Github project release version</LI><LI>Users who are uncomfortable with image tags being rewritten (Again, I get it, I am you). See also `USE_BDCC_VERSION_FOR_TYPED`</LI></UL> |
 | `USE_BDCC_VERSION_FOR_TYPED` | Boolean | <UL><LI>false (default)</LI><LI>true</LI></UL> | Set this to `true` if you want to pull the `bwdc-base` image using the `BDCC_VERSION` tag instead of the `BWDC_VERSION` tag when running [`build-typed-images.sh`].<BR><BR>I initially designed the tagging of `bwdc-base` with simplicity and convenience in mind - users would only need to know the version of `bwdc` they cared about, and that would be the tag. However, when I found [the first real bug], I realized I would have to republish the `bwdc-base` image, and if I tagged only on the version of `bwdc`, I would be overwriting an existing tagged image. Being a security minded person myself, I knew I would HATE being on the receiving end of that without at least an OPTION to control it. In my defense, I was additionally tagging `bwdc-base` with the git ref, but I didn't implement any way for users to utilize that, plus a sha isn't exactly a user friendly format. So tagging based on the release and adding this boolean is the best I could come up with on short notice. |
 | `SECRETS_MANAGER` | String | <UL><LI>env</LI><LI>~podman~</LI></UL> | When running [`build-typed-images.sh`] or [`ci.sh`]`-r MODE`, this specifies how you are managing the secrets which will be used when the container is run (See [managing-secrets.md] for details). |
