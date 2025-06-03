@@ -1,24 +1,26 @@
 # USAGE:
 #   BUILD:
 #     Defaults:
-#     podman build --build-arg-file defaults.conf --build-arg-file=CONFNAME.conf --secret=id=bw_clientid,env=BW_CLIENTID --secret=id=bw_clientsecret,env=BW_CLIENTSECRET -t hdub-tech/bwdc-gsuite-CONFNAME:VERSION_OF_THIS_IMAGE -f Containerfile
+#     podman build --build-arg-file defaults.conf --build-arg-file CONFNAME.conf --secret=id=bw_clientid,env=BW_CLIENTID --secret=id=bw_clientsecret,env=BW_CLIENTSECRET -t hdub-tech/bwdc-gsuite-CONFNAME:BWDC_GSUITE_IMAGE_VERSION -f Containerfile
 #
 #     Overrides:
-#     podman build --build-arg-file custom.conf --build-arg-file=CONFNAME.conf --secret=id=bw_clientid,env=BW_CLIENTID --secret=id=bw_clientsecret,env=BW_CLIENTSECRET -t hdub-tech/bwdc-gsuite-CONFNAME:VERSION_OF_THIS_IMAGE -f Containerfile
+#     podman build --build-arg-file custom.conf --build-arg-file CONFNAME.conf --secret=id=bw_clientid,env=BW_CLIENTID --secret=id=bw_clientsecret,env=BW_CLIENTSECRET -t hdub-tech/bwdc-gsuite-CONFNAME:BWDC_GSUITE_IMAGE_VERSION -f Containerfile
 #
 #   RUN:
 #     Non-interactively:
-#     podman run --env-file $BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/env.vars --rm bwdc-gsuite-CONFNAME:VERSION_OF_THIS_IMAGE [-h] [-c] [-t] [-s]
+#     podman run --env-file $BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/env.vars --rm bwdc-gsuite-CONFNAME:BWDC_GSUITE_IMAGE_VERSION [-h] [-c] [-t] [-s]
 #
 #     Interactively:
-#     podman run --env-file $BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/env.vars --rm -it --entrypoint bash bwdc-gsuite-CONFNAME:VERSION_OF_THIS_IMAGE
+#     podman run --env-file $BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE/env.vars --rm -it --entrypoint bash bwdc-gsuite-CONFNAME:BWDC_GSUITE_IMAGE_VERSION
 #    bitwarden@abcdef123456:~$ ./entrypoint -h  #List help for container script
 #    bitwarden@abcdef123456:~$ bwdc help        #Use raw bwdc cli
 #
 ARG BWDC_VERSION
 FROM ghcr.io/hdub-tech/bwdc-base:$BWDC_VERSION
 
-ARG BWDC_GSUITE_IMAGE_VERSION="dev"
+# "Dupe" reason: https://docs.docker.com/reference/dockerfile/#understand-how-arg-and-from-interact
+ARG BWDC_VERSION
+ARG BWDC_GSUITE_IMAGE_VERSION="${BWDC_VERSION}-0"
 ENV BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE=gsuite
 ARG CONFNAME
 LABEL org.opencontainers.image.title="bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-${CONFNAME}"

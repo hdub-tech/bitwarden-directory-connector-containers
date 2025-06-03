@@ -109,12 +109,32 @@ to your configuration file, which should be copied from the
 
 ### Common
 
-* The `BWDC_${TYPE}_IMAGE_VERSION` setting allows you to individually tag a
-  version for each individual configuration file/typed image. Updating it is
-  optional and completely up to you.
-* "Sync Interval" was deliberately omitted, as I didn't forsee these containers
-  being a long running thing, if not just for security reasons. The only time
-  secrets are accessible is while the containers are running.
+* `BWDC_${TYPE}_IMAGE_VERSION`: this setting allows you to specify the image tag
+  for each individual configuration file/typed image. _Updating it is OPTIONAL
+  and completely up to you and has NO EFFECT on what underlying bwdc base is
+  used!_ It was _designed_ to be used to tag typed images with a version that
+  only conveys the `bwdc-base` version the image was built on, while still allowing
+  users to version their own changes to the configuration files.
+  * G Suite Example: `BWDC_GSUITE_IMAGE_VERSION=1.2.0-0` would be a simple way
+    to tag an image to indicate the base image was `1.2.0` and that this conf
+    file is on its first iteration. If users need to update something like
+    `GOOGLE_SERVICE_USER_EMAIL`, they can update the version to `1.2.0-1` to
+    tag the image with a different version.
+
+> [!TIP]
+> Extra emphasis that this version number has nothing to do with which
+> bwdc-base version is used for the typed image (That is driven by `BWDC_VERSION`
+> or `BDCC_VERSION` in [`defaults.conf`]). This setting is for tagging and
+> _informational_ use only.
+<!-- markdownlint-disable-next-line no-blanks-blockquote -->
+> [!NOTE]
+> [Issue #46] is planned to create a script which will allow users to easily
+> update the base image version portion of this field in all configuration
+> files.
+
+* "Sync Interval" was deliberately omitted, as these containers were designed
+   to be short lived, if not just for security reasons. The only time secrets
+   are accessible is while the containers are running.
 
 ### G Suite
 
@@ -147,5 +167,6 @@ corresponding `data.json` values, refer to the `jq` command in the
 [git submodule]:                    https://git-scm.com/book/en/v2/Git-Tools-Submodules
 [Google Workspace > Configure sync options]:    https://bitwarden.com/help/ldap-directory/#configure-sync-options
 [Google Workspace > Connect to your directory]: https://bitwarden.com/help/workspace-directory/#connect-to-your-directory
+[Issue #46]:                                    https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/46
 [Semantic versioning]:                          https://semver.org
 [the first real bug]:                           https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/27
