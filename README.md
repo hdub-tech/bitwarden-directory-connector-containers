@@ -4,7 +4,7 @@ This project is designed to simplify automation for [`bwdc`] when the user has
 more than one sync profile. It utilizes containers, condensed key=value
 configuration files (in lieu of data.json files, however those are also
 unintentionally supported) and a separate secrets manager (podman, or anything
-that can inject them as environment vars) so that no secrets are on disk or
+that can inject secrets as environment vars) so that no secrets are on disk or
 stored within the generated images. Users can execute a single script once, and
 it will build an image per sync configuration file, then run `bwdc test` and/or
 `bwdc sync` on all of them.
@@ -13,10 +13,14 @@ This project has two sets of container images:
 
 * The `bwdc-base` image (also referred to as the "base image"), which basically
   just has bwdc installed and a helper script. This is published to ghcr.io via
-  the [Github packages for this project] (See [base-image.md] for details).
-* The "typed images", which are built off of [`bwdc-base`] and is specific to a
-  Directory Connector type, often abbreviated here as
-  `$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE` (See [typed-images.md] for details).
+  the [Github packages for this project] and is already available to use without
+  cloning this project or running scripts. This is only meant to be used
+  directly by power users. See [base-image.md] for details.
+* The "typed images", which are built off of the [`bwdc-base`] image and are
+  specific to a Directory Connector type (often abbreviated here as
+  `$BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE`) and a configuration file. This is
+  the primary use case for this project and represent the images for general
+  users. See [typed-images.md] for details.
 
 > [!NOTE]
 > Project currently only supports the Gsuite directory connector type for the

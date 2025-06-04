@@ -1,7 +1,13 @@
-# Update values below. The uncommented values are required.
-# The version associated with this specific conf file
-# This will be used to tag the image as well
-BWDC_GSUITE_IMAGE_VERSION=1.0.0
+# =========================================================
+# Update values below. The UNCOMMENTED values are REQUIRED.
+# =========================================================
+# The version associated with this specific conf file. This will be used to tag
+# the image. It does NOT have any affect on the underlying base container.
+# Recommended use:
+#  * The portion before the hyphen should be the BWDC or BDCC (default) version.
+#  * The portion after the hyphen should be a sequential number which is
+#    incremented when changes on lines OTHER than this one are made.
+#BWDC_GSUITE_IMAGE_VERSION=1.2.0-0
 
 # Bitwarden Settings > Directory > Domain
 # Google Admin > Account > Domains > Manage domains: The domain you plan to sync

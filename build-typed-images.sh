@@ -10,7 +10,8 @@ SCRIPT_NAME="$( basename "${0}" )"
 SUPPORTED_BWDC_SYNCS=( gsuite )
 SUPPORTED_SECRETS_MANAGERS=( podman env )
 
-# Configurable in conf file
+# Configurable in custom.conf file
+# The following will be set to BDCC_VERSION if USE_BDCC_VERSION_FOR_TYPED=true
 BWDC_VERSION=
 SECRETS_MANAGER=
 IMAGE_NAMESPACE=
@@ -19,7 +20,7 @@ USE_BDCC_VERSION_FOR_TYPED=false
 # shellcheck disable=SC1091
 . "${SCRIPT_DIR}/defaults.conf"
 
-# Configurable args
+# Configurable script args
 BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE=
 NO_CACHE=
 OPTIONAL_REBUILD_BWDC_LOGIN_STAGE=
@@ -126,7 +127,7 @@ buildGsuite() {
       --secret=id=bw_clientsecret,env=BW_CLIENTSECRET \
       --build-arg BWDC_VERSION="${BWDC_VERSION}" \
       --build-arg CONFNAME="${conf_name}" \
-      -t "${IMAGE_NAMESPACE}/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-${conf_name}":"${BWDC_GSUITE_IMAGE_VERSION}" \
+      -t "${IMAGE_NAMESPACE}/bwdc-${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}-${conf_name}":"${BWDC_GSUITE_IMAGE_VERSION:-$DEFAULT_BWDC_IMAGE_VERSION_TAG}" \
       -f Containerfile \
       || exit 8
   done
@@ -215,6 +216,9 @@ else
       # difficult. You are shocked, I know.
       # shellcheck disable=SC2153
       [ -n "${USE_BDCC_VERSION_FOR_TYPED}" ] && "${USE_BDCC_VERSION_FOR_TYPED}" && BWDC_VERSION="${BDCC_VERSION}"
+
+      # Typed image defaults
+      DEFAULT_BWDC_IMAGE_VERSION_TAG="${BWDC_VERSION}-0"
 
       case "${BITWARDENCLI_CONNECTOR_DIRECTORY_TYPE}" in
         "gsuite" ) buildGsuite ;;
