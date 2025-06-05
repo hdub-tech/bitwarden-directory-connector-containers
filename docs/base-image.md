@@ -17,6 +17,7 @@ the [BYO data.json method], you can skip directly to that section below.
   - [When](#when)
   - [Requirements](#requirements)
   - [How](#how)
+  - [Releasing](#releasing)
 - [Published Image](#published-image)
 - [BYO data.json method](#byo-datajson-method)
   - [What the `${SECRETS}`?](#what-the-secrets)
@@ -79,6 +80,10 @@ some screenshots and/or keep your test commands!
 5. Open a PR to bump the version. Document how you tested. Ensure the Actions
    for your PR passed.
 <!-- markdownlint-enable blanks-around-lists ol-prefix -->
+
+### Releasing
+
+Refer to [CONTRIBUTING.md#releases] for the release process.
 
 ## Published image
 
@@ -203,6 +208,7 @@ related tickets ([LDAP], [Azure], [OneLogin], [Okta])!
 [`bwdc-base` image]:     ../Containerfile
 [config file method]:    ./creating-configs.md
 [CONTRIBUTING.md]:       ../CONTRIBUTING.md
+[CONTRIBUTING.md#releases]: ../CONTRIBUTING.md#releases
 [`defaults.conf`]:       ../defaults.conf
 [`entrypoint.sh`]:       ../entrypoint.sh
 [managing-secrets.md]:   ./managing-secrets.md
