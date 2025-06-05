@@ -1,28 +1,46 @@
-# CONTRIBUTING (WIP)
+# CONTRIBUTING (_WIP_)
 
 ## Issues and PRs welcome!!
 
-_[Issue #6]: Add Code of Conduct stuff. In the meantime, be good to each other or
+## Table of Contents
+
+- [Code of Conduct](#code-of-conduct)
+- [Initial set-up](#initial-set-up)
+  - [Sign and Sign Off on commits](sign-and-sign-off-on-commits)
+  - [Linting](#linting)
+- [Releases](#releases)
+
+## Code of Conduct
+
+_[Issue #7]: Add Code of Conduct stuff. In the meantime, be good to each other or
 I will banhammer you. You will have one opportunity to apologize for bad
-behavior, and then you are gone._
+behavior or you are gone._
 
-_[Issue #7]: Add [DCO]_
+## Initial set-up
 
-> [!TIP]
-> Signing (`Verified` tag) and Signing off on (`Signed-Off-by`) your commits is
-required. HOWEVER, unlike most projects which require this, [@hdub-tech] will
-NEVER require your real name be in the `Signed-Off-by` line. We firmly believe
-you should be able to contribute to open source AND maintain your privacy.
+In addition to cloning this project and installing the [Requirements], it is
+recommended you do the things in the next few sections.
 
-## Linting
+### Sign and Sign Off on commits
 
-This project contains a [Linting workflow] which will kick off when PRs are
-opened. This workflow executes the [pre-commit.sh] script. It is HIGHLY
-recommended that you link the `.github/pre-commit.sh` to
-`.git/hooks/pre-commit.sh` so that this script will execute for you locally
-before you even get to the PR stage.
+_[Issue #6]: Add [DCO]_
+
+[Signing] (`Verified` tag / `git commit -S`) and [Signing off] (`Signed-Off-by`
+in agreement with DCO / `git commit --signoff|-s`) on your commits is required.
+HOWEVER, unlike most projects which require this, [@hdub-tech] will NEVER
+require your real name to be in the `Signed-Off-by` line. We firmly believe you
+should be able to contribute to open source AND maintain your privacy.
+
+### Linting
+
+All commits must pass the linter. This project contains a [Linting workflow]
+which will kick off when PRs are opened. This workflow executes the
+[pre-commit.sh] script. It is HIGHLY recommended that you link the
+`.github/pre-commit.sh` to `.git/hooks/pre-commit.sh` so that this script will
+execute for you locally before you even get to the PR stage.
 
 ```bash
+# From the bitwarden-directory-connector-containers directory
 mkdir .git/hooks  # If necessary
 ln -s -r .github/pre-commit.sh .git/hooks/pre-commit
 ```
@@ -98,15 +116,18 @@ ln -s -r .github/pre-commit.sh .git/hooks/pre-commit
 [Linting workflow]:                ./.github/workflows/lint.yml
 [pre-commit.sh]:                   ./.github/pre-commit.sh
 [`update-bdcc-version-branch.sh`]: ./.github/workflows/update-bdcc-version-branch.sh
-[DCO]:              https://developercertificate.org/_
-[@hdub-tech]:       https://github.com/hdub-tech
-[Issue #6]:         https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/6
-[Issue #7]:         https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/7
+[DCO]:                 https://developercertificate.org/
+[@hdub-tech]:          https://github.com/hdub-tech
 [Build/Push]:          https://github.com/hdub-tech/bitwarden-directory-connector-containers/actions/workflows/build-push-base.yml
+[Issue #6]:            https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/6
+[Issue #7]:            https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/7
 [Issue #39]:           https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues/39
 [new release]:         https://github.com/hdub-tech/bitwarden-directory-connector-containers/releases/new
 [pull request]:        https://github.com/hdub-tech/bitwarden-directory-connector-containers/pulls
+[Requirements]:        https://github.com/hdub-tech/bitwarden-directory-connector-containers/blob/main/README.md#requirements
 [Semantic versioning]: https://semver.org/
+[Signing]:             https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits
+[Signing off]:         https://git-scm.com/docs/git-commit#Documentation/git-commit.txt-code--signoffcode
 
 <!-- markdownlint-configure-file {
   MD026: false
