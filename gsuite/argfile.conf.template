@@ -7,7 +7,7 @@
 #  * The portion before the hyphen should be the BWDC or BDCC (default) version.
 #  * The portion after the hyphen should be a sequential number which is
 #    incremented when changes on lines OTHER than this one are made.
-#BWDC_GSUITE_IMAGE_VERSION=1.2.0-0
+#BWDC_GSUITE_IMAGE_VERSION=1.3.0-0
 
 # Bitwarden Settings > Directory > Domain
 # Google Admin > Account > Domains > Manage domains: The domain you plan to sync
