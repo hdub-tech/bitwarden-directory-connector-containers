@@ -68,10 +68,10 @@ the following:
 ```bash
 cd YOUR_PROJECT_REPO_NAME/bitwarden-directory-connector-containers
 git fetch  # To fetch new tags/branches
-git checkout v1.2.0  # Or your preferred tag
+git checkout v1.3.0  # Or your preferred tag
 cd ..
 git add bitwarden-directory-connector-containers
-git commit -m "Set bitwarden-directory-connector-containers to v1.2.0"
+git commit -m "Set bitwarden-directory-connector-containers to v1.3.0"
 ```
 
 ## `defaults.conf` / `custom.conf`

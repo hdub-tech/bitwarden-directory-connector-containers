@@ -48,7 +48,7 @@ ln -s -r .github/pre-commit.sh .git/hooks/pre-commit
 ## Releases
 
 > [!NOTE]
-> _There is a pending todo ([Issue #39] to convert this section to a workflow._
+> _There is a pending todo ([Issue #39]) to convert this section to a workflow._
 <!-- markdownlint-disable-next-line no-blanks-blockquote -->
 > [!IMPORTANT]
 > _This assumes you have already built and tested the base container as
@@ -62,11 +62,12 @@ ln -s -r .github/pre-commit.sh .git/hooks/pre-commit
    ```
 
 2. Ensure you are at the root of the project on the main branch with all
-   relevant code merged to main.
+   relevant code merged to main and pulled locally.
 
    ```bash
    cd /PATH/TO/bitwarden-directory-connector-containers
    git checkout main
+   git pull
    ```
 
 3. Run the [`update-bdcc-version-branch.sh`] script to create a release branch,
