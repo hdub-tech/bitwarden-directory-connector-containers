@@ -82,6 +82,15 @@ you are using [`ci.sh`]), where your repository contains your `custom.conf` and
 type-specific configuration files (See [config-files.md] for details). If you
 are just playing around and trying this out though, use the "no submodule"
 version of the steps below.
+<!-- markdownlint-disable-next-line no-blanks-blockquote -->
+> [!WARNING]
+> This assumes you have already completed the work to ensure your environment is
+capable of sync'ing to Bitwarden. For example: If you are going to sync to a
+Google Workspace, you should have already set-up the Google Cloud project per
+the Bitwarden documentation.
+>
+> If the [Bitwarden Directory Connector desktop app] or the [`bwdc`] CLI works
+already, you have met this requirement.
 
 1. OPTIONAL: Copy the [`defaults.conf`] file to `custom.conf` file, and update
    `BWDC_VERSION`, `SECRETS_MANAGER` and `IMAGE_NAMESPACE` as needed (Detailed
