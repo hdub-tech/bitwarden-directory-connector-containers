@@ -1,6 +1,7 @@
 # bitwarden-directory-connector-containers
 
-This project is designed to simplify automation for [`bwdc`] when the user has
+This project is designed to remove the need for using the [Bitwarden Directory
+Connector desktop app] and/or simplify automation for [`bwdc`] when the user has
 more than one sync profile. It utilizes containers, condensed key=value
 configuration files (in lieu of data.json files, however those are also
 unintentionally supported) and a separate secrets manager (podman, or anything
@@ -42,11 +43,11 @@ awkwardly, as it was not the project's purpose. See [BYO data.json method]).
 
 ## Background
 
-I personally did not like dealing with a bunch of `data.json` files or having
-secrets stored in them. So I came up with a way to use simple `key=value`
-configuration files (which mimic the Bitwarden Directory Connector app screens),
-and generate individual container images containing helper scripts to manage
-login/logout/test/sync.
+I personally did not like dealing with the Bitwarden app, and a bunch of
+`data.json` files or having secrets stored in them. So I came up with a way to
+use simple `key=value` configuration files (which mimic the Bitwarden Directory
+Connector app screens), and generate individual container images containing
+helper scripts to manage login/logout/test/sync.
 
 ## Scripts
 
@@ -73,13 +74,23 @@ related to, files they depend on and links to documentation that explain them.
 
 > [!TIP]
 > Read through these steps once before checking out the detailed documentation links!
->
+<!-- markdownlint-disable-next-line no-blanks-blockquote -->
+> [!TIP]
 > It is recommended (but not required) that you use this repository as a
-submodule within your own repository "in production" (particularly if you are
-using [`ci.sh`]), where your repository contains your `custom.conf` and
+submodule within your own PRIVATE repository "in production" (particularly if
+you are using [`ci.sh`]), where your repository contains your `custom.conf` and
 type-specific configuration files (See [config-files.md] for details). If you
 are just playing around and trying this out though, use the "no submodule"
 version of the steps below.
+<!-- markdownlint-disable-next-line no-blanks-blockquote -->
+> [!WARNING]
+> This assumes you have already completed the work to ensure your environment is
+capable of sync'ing to Bitwarden. For example: If you are going to sync to a
+Google Workspace, you should have already set-up the Google Cloud project per
+the Bitwarden documentation.
+>
+> If the [Bitwarden Directory Connector desktop app] or the [`bwdc`] CLI works
+already, you have met this requirement.
 
 1. OPTIONAL: Copy the [`defaults.conf`] file to `custom.conf` file, and update
    `BWDC_VERSION`, `SECRETS_MANAGER` and `IMAGE_NAMESPACE` as needed (Detailed
@@ -225,6 +236,7 @@ Please see the [SECURITY.md] guide for details.
 [sample workflows documentation]:   ./.github/workflows/samples/README.md
 [This project's license]:           ./LICENSE
 [typed-images.md]:                  ./docs/typed-images.md
+[Bitwarden Directory Connector desktop app]: https://bitwarden.com/help/directory-sync-desktop
 [`bwdc`]:                           https://bitwarden.com/help/directory-sync-cli
 [Directory Connector]:              https://github.com/bitwarden/directory-connector
 [`directory-connector` issues]:     https://github.com/hdub-tech/bitwarden-directory-connector-containers/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22Component%3A%20directory-connector%22

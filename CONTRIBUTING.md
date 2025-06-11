@@ -81,8 +81,16 @@ ln -s -r .github/pre-commit.sh .git/hooks/pre-commit
 4. Open a [pull request] for the `release/$NEW_BDCC_VERSION` branch and merge
    it to main.
 
-5. Run the [Build/Push] workflow to publish the new `bwdc-base` image.
+5. Run the [Build/Push] workflow on Branch `main` to publish the new
+   `bwdc-base` image.
 
+> [!NOTE]
+> _The reason this step is not AFTER drafting release, and the reason it is run
+against `main` as opposed to the tag created during the release step, is to
+save coming back to Edit the Release to add in the `$PKG_ID` which is not
+generated until after the Push. Yes, this ID changes every release._
+
+<!-- markdownlint-disable-next-line MD029 -->
 6. Draft a [new release] with the following settings:
 
    a. Choose a tag: Type in `v$NEW_BDCC_VERSION` (Example: `v1.2.3`), and
@@ -95,11 +103,14 @@ ln -s -r .github/pre-commit.sh .git/hooks/pre-commit
    d. Click the button for "Generate release notes" (The Release Title field
       should now match the Tag).
 
-   e. Change the `in FULL_PR_LINK` to just `(#xyz)` in each bullet in the
-      "What's changed" section.
+   e. In the "What's changed" section:
+
+      1. Change the `in FULL_PR_LINK` to just `(#xyz)` in each bullet.
+
+      2. Remove the `Release/$NEW_BDCC_VERSION` line as it is redundant.
 
    f. Add the following blurb (updating `$PKG_ID`, `$NEW_BDCC_VERSION` and
-      `BWDC_VERSION`):
+      `$BWDC_VERSION`):
 
       <!-- markdownlint-disable MD013 -->
       ```markdown
