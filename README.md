@@ -74,10 +74,11 @@ related to, files they depend on and links to documentation that explain them.
 
 > [!TIP]
 > Read through these steps once before checking out the detailed documentation links!
->
+<!-- markdownlint-disable-next-line no-blanks-blockquote -->
+> [!TIP]
 > It is recommended (but not required) that you use this repository as a
-submodule within your own repository "in production" (particularly if you are
-using [`ci.sh`]), where your repository contains your `custom.conf` and
+submodule within your own PRIVATE repository "in production" (particularly if
+you are using [`ci.sh`]), where your repository contains your `custom.conf` and
 type-specific configuration files (See [config-files.md] for details). If you
 are just playing around and trying this out though, use the "no submodule"
 version of the steps below.
